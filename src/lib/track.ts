@@ -3,14 +3,11 @@
  * - Only an event NAME and an attribution CATEGORY are ever sent. Never time entries,
  *   names, pay rates or any other value typed by the user.
  * - No cookies, no IDs. Attribution lives in sessionStorage for the visit only.
- * - Sending is OFF unless VITE_EVENTS_URL is configured (see docs/timecard/growth-metrics.md).
+ * - Events are counted in memory and sent as ONE small batch per visit (when the page is hidden),
+ *   to the same-site collector /api/e (functions/api/e.ts). VITE_EVENTS_URL=off disables sending.
  */
-export const EVENTS = [
-  'calculator_opened', 'calculation_completed', 'share_button_clicked', 'share_link_copied',
-  'share_card_downloaded', 'report_exported', 'invite_clicked', 'embed_code_copied',
-] as const;
-export type EventName = (typeof EVENTS)[number];
-export type Attribution = 'organic_search' | 'direct' | 'shared_result' | 'coworker_invitation' | 'embedded_calculator' | 'other_referral';
+import type { Attribution, EventName } from './events';
+export { EVENTS, type Attribution, type EventName } from './events';
 
 /** Values for the ?ref= tag we put on every link the product sends out. */
 export const REF = { invite: 'invite', card: 'card', pdf: 'pdf', share: 'share', team: 'team', embed: 'embed' } as const;
@@ -50,19 +47,38 @@ export function attribution(): Attribution {
   return cached;
 }
 
-const ENDPOINT: string = import.meta.env.VITE_EVENTS_URL || '';
+const CONFIG: string = import.meta.env.VITE_EVENTS_URL || '/api/e';
+const ENDPOINT = CONFIG === 'off' || import.meta.env.DEV ? '' : CONFIG;
 const sentOnce = new Set<string>();
+let counts: Partial<Record<EventName, number>> = {};
+let listening = false;
+
+/** Build the batch body; exported for tests. */
+export function batchBody(a: Attribution, c: Partial<Record<EventName, number>>): string | null {
+  return Object.keys(c).length ? JSON.stringify({ a, e: c }) : null;
+}
+
+function flush() {
+  const body = batchBody(attribution(), counts);
+  counts = {};
+  if (!body || !ENDPOINT) return;
+  try {
+    const ok = navigator.sendBeacon?.(ENDPOINT, new Blob([body], { type: 'application/json' }));
+    if (!ok) fetch(ENDPOINT, { method: 'POST', body, keepalive: true, headers: { 'content-type': 'application/json' } }).catch(() => {});
+  } catch { /* never break the app for analytics */ }
+}
 
 export function track(event: EventName, opts: { once?: boolean } = {}) {
   if (typeof window === 'undefined') return;
   if (opts.once) { if (sentOnce.has(event)) return; sentOnce.add(event); }
-  const payload = JSON.stringify({ e: event, a: attribution() });
-  if (import.meta.env.DEV) console.debug('[track]', payload);
-  if (!ENDPOINT) return;
-  try {
-    const ok = navigator.sendBeacon?.(ENDPOINT, new Blob([payload], { type: 'application/json' }));
-    if (!ok) fetch(ENDPOINT, { method: 'POST', body: payload, keepalive: true, headers: { 'content-type': 'application/json' } }).catch(() => {});
-  } catch { /* never break the app for analytics */ }
+  counts[event] = (counts[event] ?? 0) + 1;
+  if (import.meta.env.DEV) console.debug('[track]', event, attribution());
+  if (!listening) {
+    listening = true;
+    // One beacon when the visitor leaves or switches away (the reliable moment on mobile).
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
+    window.addEventListener('pagehide', flush);
+  }
 }
 
 /** Append ?ref=... to an outgoing product link (before any #fragment). */

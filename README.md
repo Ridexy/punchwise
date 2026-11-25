@@ -30,6 +30,9 @@ scripts/prerender.mjs  static HTML for every route + sitemap.xml + robots.txt + 
 scripts/sw.mjs         offline service worker (runs after prerender)
 scripts/e2e.mjs        browser QA suite (Playwright)
 scripts/icons.mjs      regenerates PNG icons and og.jpg
+functions/api/e.ts     growth-event collector (Pages Function -> Workers Analytics Engine)
+wrangler.toml          Pages config: output dir + Analytics Engine binding
+.env.production        public build settings (site URL, analytics token)
 ```
 
 ## Local development
@@ -61,22 +64,28 @@ Unit tests (time arithmetic, overtime, share links, PDF and CSV):
 npm test
 ```
 
-End-to-end browser QA. Run it against a running `npm run preview`. It needs Playwright and Chromium,
-and writes `../docs/timecard/test-report-e2e.json`.
+End-to-end browser QA. It needs Playwright and Chromium, and writes `../docs/timecard/test-report-e2e.json`.
+Run it against Cloudflare's local runtime, which also serves the `/api/e` function, in two terminals:
 
 ```bash
-npm run e2e
+npm run pages:dev
 ```
 
+```bash
+BASE_URL=http://127.0.0.1:8788 npm run e2e
+```
+
+(`npm run preview` also works for everything except the collector test.)
+
 ## Environment configuration
-Copy `.env.example` to `.env` locally, or set these as Cloudflare Pages environment variables.
-Both are read **at build time**.
+Public build settings live in **`.env.production`**, which is committed: everything in it ends up in the public page anyway.
+Edit that file rather than the Cloudflare dashboard. All values are read **at build time**.
 
 | Variable | Purpose | Default |
 |---|---|---|
 | `VITE_SITE_URL` | Public URL with no trailing slash. Used for canonical tags, sitemap, Open Graph tags and the PDF footer link. | `https://hourtally.pages.dev` |
 | `VITE_CF_BEACON_TOKEN` | Cloudflare Web Analytics token. Empty turns analytics off. The token is public by design. | empty |
-| `VITE_EVENTS_URL` | Optional endpoint for aggregate growth events (event name + attribution only). Empty sends nothing. See `docs/timecard/growth-metrics.md`. | empty |
+| `VITE_EVENTS_URL` | Where growth batches are sent. Empty means the built-in `/api/e` collector; `off` disables sending. See `docs/timecard/growth-metrics.md`. | `/api/e` |
 
 ## Deploying to Cloudflare Pages (free tier)
 1. Push this repository to GitHub.
@@ -86,18 +95,26 @@ Both are read **at build time**.
    - Root directory: **`timecard`**
    - Build command: **`npm run build`**
    - Build output directory: **`dist`**
-   - Environment variable: `NODE_VERSION` = `22`
-4. Add `VITE_SITE_URL` = your Pages URL (for example `https://hourtally.pages.dev`), or your custom domain once you have one.
-5. **Analytics:** go to **Analytics & Logs → Web Analytics → Add a site**, choose the manual JS snippet,
-   copy the token from the snippet, and set it as `VITE_CF_BEACON_TOKEN`. Redeploy.
+
+   The Node version comes from `timecard/.nvmrc` (22). `timecard/wrangler.toml` sets the output directory and
+   connects the **Analytics Engine** dataset `hourtally_events` to the `/api/e` function as the binding `EVENTS`. Cloudflare reads
+   that file on deploy, so there is no dashboard step for the binding. The dataset is created on the first write.
+4. Edit `timecard/.env.production`: set `VITE_SITE_URL` to your Pages URL (for example `https://hourtally.pages.dev`) or your custom domain.
+5. **Web Analytics** (page views): go to **Analytics & Logs → Web Analytics → Add a site**, choose the manual JS snippet,
+   copy the token, paste it into `VITE_CF_BEACON_TOKEN` in `.env.production`, then commit and push.
    (Cloudflare can also inject the beacon automatically for Pages sites. Use one method only.)
-6. Deploy. Pages serves `dist/404.html` for unknown URLs, and the `_headers` file sets caching and security headers.
-7. After the first deploy: add the site to Google Search Console and submit `/sitemap.xml`.
+6. Deploy. Pages serves `dist/404.html` for unknown URLs, and `_headers` sets caching and security headers.
+7. Check it: open the site, use the calculator, switch tabs, then go to **Workers & Pages → hourtally → Functions**
+   and confirm `/api/e` requests returning 204.
+8. Add the site to Google Search Console and submit `/sitemap.xml`.
 
-Every push to the production branch redeploys. Pull requests get preview URLs automatically.
+**Free-tier note.** `/api/e` is the only route that runs server code. Every page and file is served as a static asset.
+Each visit that triggers an event sends **one** request when the visitor leaves or switches away, and that counts toward
+the Workers free daily request allowance. If the allowance runs out, only `/api/e` is affected and the site keeps working.
+Check Cloudflare's current limits for Functions requests and Analytics Engine writes before you rely on high volume. They couldn't be
+looked up from the build environment.
 
-**Custom domain:** if you buy one, set it under **Custom domains** in the Pages project, then update
-`VITE_SITE_URL` and redeploy so canonical URLs, the sitemap and PDF links use it.
+**Custom domain:** add it under **Custom domains** in the Pages project, update `VITE_SITE_URL`, and push.
 
 ## Database migrations
 There is no server database. If cloud sync is added later (see the "Pro" ideas in the brief):

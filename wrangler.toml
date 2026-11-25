@@ -1,0 +1,11 @@
+# Cloudflare Pages project config (the presence of pages_build_output_dir marks this as Pages).
+# Deploys from Git pick this up automatically; no dashboard binding step is needed.
+name = "hourtally"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-10-15"
+
+# Growth events collector (functions/api/e.ts) -> Workers Analytics Engine dataset.
+# The dataset is created automatically on the first write.
+[[analytics_engine_datasets]]
+binding = "EVENTS"
+dataset = "hourtally_events"

@@ -418,6 +418,39 @@ for (const dev of ['iPhone SE', 'Pixel 7', null]) {
   await ctx.close();
 }
 
+// 3b. Growth events: one privacy-safe batch per visit, sent when the page is left
+{
+  await test('growth beacon: one batch with event counts + attribution only, sent when the page is hidden', async () => {
+    const ctx = await ctxFor('Pixel 7');
+    // Record beacon bodies inside the page (Playwright cannot read Blob beacon bodies from the network layer).
+    await ctx.addInitScript(() => {
+      window.__beacons = [];
+      const orig = navigator.sendBeacon.bind(navigator);
+      navigator.sendBeacon = (url, data) => { if (data instanceof Blob) data.text().then((t) => window.__beacons.push(t)); return orig(url, data); };
+    });
+    const p = await ctx.newPage();
+    let requests = 0;
+    ctx.on('request', (r) => { if (r.url().endsWith('/api/e') && r.method() === 'POST') requests++; });
+    await p.goto('/?ref=invite');
+    await ready(p);
+    await setDay(p, 'Monday', 1, '09:00', '17:00');
+    await p.fill('#emp', 'Secret Person');
+    await Promise.all([p.waitForEvent('download'), p.getByRole('button', { name: 'CSV', exact: true }).first().click()]);
+    expect(requests === 0, 'nothing sent while the page is in use');
+    await p.evaluate(() => { Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
+    await p.waitForFunction(() => window.__beacons.length > 0);
+    await p.waitForTimeout(300);
+    expect(requests === 1, `expected 1 request, got ${requests}`);
+    const body = await p.evaluate(() => window.__beacons[0]);
+    const o = JSON.parse(body);
+    expect(o.a === 'coworker_invitation', `attribution ${o.a}`);
+    expect(o.e.calculator_opened === 1 && o.e.calculation_completed === 1 && o.e.report_exported === 1, body);
+    expect(Object.keys(o).sort().join() === 'a,e', 'only a and e keys');
+    expect(!/Secret|09:00|17:00|8:00|invite\?/.test(body), 'no personal data in beacon');
+    await ctx.close();
+  });
+}
+
 // 4. Offline (service worker) + prerendered HTML without JavaScript
 {
   await test('pages render meaningful content with JavaScript disabled (SEO)', async () => {
