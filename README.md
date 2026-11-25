@@ -99,9 +99,12 @@ Edit that file rather than the Cloudflare dashboard. All values are read **at bu
    The Node version comes from `timecard/.nvmrc` (22). `timecard/wrangler.toml` sets the output directory and
    connects the **Analytics Engine** dataset `punchwise_events` to the `/api/e` function as the binding `EVENTS`. Cloudflare reads
    that file on deploy, so there is no dashboard step for the binding. The dataset is created on the first write.
-4. **Domain.** The site URL in `timecard/.env.production` is `https://punchwise.com`, and it's used for canonical links, the sitemap, PDF footers, share cards and invites.
-   After buying the domain, add it in the Pages project under **Custom domains** *before* the first public launch. If you launch
-   before the domain is connected, temporarily set `VITE_SITE_URL=https://punchwise.pages.dev` (or whatever Pages URL you're given) and push.
+4. **Site URL.** `timecard/.env.production` sets `VITE_SITE_URL=https://punchwise.pages.dev`, the free Cloudflare subdomain.
+   It's used for canonical links, the sitemap, PDF footers, share cards and invites. After the first deploy, check the
+   address Cloudflare actually assigned (it adds a suffix such as `punchwise-xyz.pages.dev` if `punchwise` is taken). If it differs,
+   put it in `.env.production` and push.
+   **Later, with punchwise.com:** add it under **Custom domains**, change `VITE_SITE_URL` to `https://punchwise.com` and push. The
+   pages.dev address keeps working, and the canonical tags then point search engines at the new domain.
 5. **Web Analytics** (page views): go to **Analytics & Logs → Web Analytics → Add a site**, choose the manual JS snippet,
    copy the token, paste it into `VITE_CF_BEACON_TOKEN` in `.env.production`, then commit and push.
    (Cloudflare can also inject the beacon automatically for Pages sites. Use one method only.)
