@@ -1,5 +1,5 @@
 // End-to-end QA against a running preview server (npm run preview).
-// Writes docs-friendly results to ../docs/timecard/test-report-e2e.json and prints a summary.
+// Writes docs-friendly results to docs/test-report-e2e.json and prints a summary.
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
@@ -487,5 +487,5 @@ for (const dev of ['iPhone SE', 'Pixel 7', null]) {
 await browser.close();
 const passed = results.filter((r) => r.ok).length;
 console.log(`\n${passed}/${results.length} passed`);
-fs.writeFileSync(new URL('../../docs/timecard/test-report-e2e.json', import.meta.url), JSON.stringify({ base: BASE, date: new Date().toISOString(), passed, total: results.length, results }, null, 2));
+fs.writeFileSync(new URL('../docs/test-report-e2e.json', import.meta.url), JSON.stringify({ base: BASE, date: new Date().toISOString(), passed, total: results.length, results }, null, 2));
 process.exit(passed === results.length ? 0 : 1);

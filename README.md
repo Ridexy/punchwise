@@ -4,9 +4,10 @@ A privacy-first, mobile-first time card calculator. Users enter clock-in and clo
 and overtime rules, then get weekly hours and pay and send or print a signed timesheet PDF.
 Everything runs in the browser. There is no backend, no account, and nothing is uploaded.
 
-- Product brief: [`../docs/timecard/product-brief.md`](../docs/timecard/product-brief.md)
-- Keyword research: [`../docs/idea-search/round-1-keyword-scan.md`](../docs/idea-search/round-1-keyword-scan.md)
-- Test report: [`../docs/timecard/test-report.md`](../docs/timecard/test-report.md)
+- Product brief: [`docs/product-brief.md`](docs/product-brief.md)
+- Keyword research: [`docs/research/round-1-keyword-scan.md`](docs/research/round-1-keyword-scan.md)
+- Test report: [`docs/test-report.md`](docs/test-report.md)
+- Spec gap analysis: [`docs/spec-v2-gap-analysis.md`](docs/spec-v2-gap-analysis.md) · Growth metrics: [`docs/growth-metrics.md`](docs/growth-metrics.md)
 
 ## Stack
 React 19 + TypeScript + Vite 6 + Tailwind 3 + React Router 6, with every route pre-rendered to static HTML
@@ -64,7 +65,7 @@ Unit tests (time arithmetic, overtime, share links, PDF and CSV):
 npm test
 ```
 
-End-to-end browser QA. It needs Playwright and Chromium, and writes `../docs/timecard/test-report-e2e.json`.
+End-to-end browser QA. It needs Playwright and Chromium, and writes `docs/test-report-e2e.json`.
 Run it against Cloudflare's local runtime, which also serves the `/api/e` function, in two terminals:
 
 ```bash
@@ -85,21 +86,21 @@ Edit that file rather than the Cloudflare dashboard. All values are read **at bu
 |---|---|---|
 | `VITE_SITE_URL` | Public URL with no trailing slash. Used for canonical tags, sitemap, Open Graph tags and the PDF footer link. | `https://punchwise.com` |
 | `VITE_CF_BEACON_TOKEN` | Cloudflare Web Analytics token. Empty turns analytics off. The token is public by design. | empty |
-| `VITE_EVENTS_URL` | Where growth batches are sent. Empty means the built-in `/api/e` collector; `off` disables sending. See `docs/timecard/growth-metrics.md`. | `/api/e` |
+| `VITE_EVENTS_URL` | Where growth batches are sent. Empty means the built-in `/api/e` collector; `off` disables sending. See `docs/growth-metrics.md`. | `/api/e` |
 
 ## Deploying to Cloudflare Pages (free tier)
 1. Push this repository to GitHub.
 2. In the Cloudflare dashboard, go to **Workers & Pages → Create → Pages → Connect to Git**, then pick the repo.
 3. Build settings:
    - Framework preset: **None**
-   - Root directory: **`timecard`**
+   - Root directory: *(leave empty: the app is at the repo root)*
    - Build command: **`npm run build`**
    - Build output directory: **`dist`**
 
-   The Node version comes from `timecard/.nvmrc` (22). `timecard/wrangler.toml` sets the output directory and
+   The Node version comes from `.nvmrc` (22). `wrangler.toml` sets the output directory and
    connects the **Analytics Engine** dataset `punchwise_events` to the `/api/e` function as the binding `EVENTS`. Cloudflare reads
    that file on deploy, so there is no dashboard step for the binding. The dataset is created on the first write.
-4. **Site URL.** `timecard/.env.production` sets `VITE_SITE_URL=https://punchwise.pages.dev`, the free Cloudflare subdomain.
+4. **Site URL.** `.env.production` sets `VITE_SITE_URL=https://punchwise.pages.dev`, the free Cloudflare subdomain.
    It's used for canonical links, the sitemap, PDF footers, share cards and invites. After the first deploy, check the
    address Cloudflare actually assigned (it adds a suffix such as `punchwise-xyz.pages.dev` if `punchwise` is taken). If it differs,
    put it in `.env.production` and push.

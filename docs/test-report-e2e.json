@@ -1,0 +1,320 @@
+{
+  "base": "http://127.0.0.1:8788",
+  "date": "2026-11-25T17:43:49.707Z",
+  "passed": 78,
+  "total": 78,
+  "results": [
+    {
+      "name": "layout iPhone SE /: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout iPhone SE /biweekly-time-card-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout iPhone SE /time-duration-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout iPhone SE /hours-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout iPhone SE /overtime-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout iPhone SE /time-to-decimal/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout iPhone SE /military-time-converter/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout iPhone SE /printable-timesheet/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout iPhone SE /privacy/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout iPhone SE /saved/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout iPhone SE /view/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /biweekly-time-card-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /time-duration-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /hours-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /overtime-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /time-to-decimal/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /military-time-converter/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /printable-timesheet/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /privacy/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /saved/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout Pixel 7 /view/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /biweekly-time-card-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /time-duration-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /hours-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /overtime-calculator/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /time-to-decimal/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /military-time-converter/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /printable-timesheet/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /privacy/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /saved/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "layout desktop 1280 /view/: no horizontal scroll, no console errors",
+      "ok": true
+    },
+    {
+      "name": "week starts on Monday by default",
+      "ok": true
+    },
+    {
+      "name": "typed input: \"9\" and \"5\" read as 9 AM - 5 PM = 8:00",
+      "ok": true
+    },
+    {
+      "name": "typed input: AM/PM toggle flips an ambiguous time",
+      "ok": true
+    },
+    {
+      "name": "typed input: \"930\" \"6p\" \"1730\" \"8.15a\" all parse",
+      "ok": true
+    },
+    {
+      "name": "invalid typed time is rejected with a message, not guessed",
+      "ok": true
+    },
+    {
+      "name": "single shift with 30 min break = 8:15 / 8.25",
+      "ok": true
+    },
+    {
+      "name": "split shift (two in/out pairs) adds up",
+      "ok": true
+    },
+    {
+      "name": "overnight shift 22:00 to 06:00 = 8:00, with visible next-day note",
+      "ok": true
+    },
+    {
+      "name": "\"Same as previous day\" copies shifts",
+      "ok": true
+    },
+    {
+      "name": "weekly overtime: 48:45 worked -> 8:45 overtime and correct pay at $20",
+      "ok": true
+    },
+    {
+      "name": "separate overtime rate overrides rate x 1.5 ($35/h OT -> $1,106.25)",
+      "ok": true
+    },
+    {
+      "name": "daily+weekly preset: a 13 h day earns 1 h double time, no double counting ($1,102.50)",
+      "ok": true
+    },
+    {
+      "name": "empty / incomplete fields warn without breaking totals",
+      "ok": true
+    },
+    {
+      "name": "biweekly switch shows 14 days and keeps entered hours",
+      "ok": true
+    },
+    {
+      "name": "long names do not overflow the layout",
+      "ok": true
+    },
+    {
+      "name": "refresh recovery: data survives a reload (IndexedDB)",
+      "ok": true
+    },
+    {
+      "name": "PDF download produces a valid PDF",
+      "ok": true
+    },
+    {
+      "name": "CSV download has a row per day",
+      "ok": true
+    },
+    {
+      "name": "copy totals puts a readable summary on the clipboard",
+      "ok": true
+    },
+    {
+      "name": "print shows only the clean timesheet",
+      "ok": true
+    },
+    {
+      "name": "clear all empties the week and Undo restores it",
+      "ok": true
+    },
+    {
+      "name": "signature drawing (touch/mouse) is captured and shown",
+      "ok": true
+    },
+    {
+      "name": "share privacy: by default the link carries hours only (no name, company or pay)",
+      "ok": true
+    },
+    {
+      "name": "loop 1: opting in adds name and pay; channels present; Escape closes",
+      "ok": true
+    },
+    {
+      "name": "loop 1: manager opens the link in a fresh browser and sees the same totals",
+      "ok": true
+    },
+    {
+      "name": "share card: branded PNG (1080x1080) downloads; general mode works; no pay or name",
+      "ok": true
+    },
+    {
+      "name": "invite a coworker: editable message flows into WhatsApp link",
+      "ok": true
+    },
+    {
+      "name": "broken share link shows a helpful message",
+      "ok": true
+    },
+    {
+      "name": "loop 2: manager creates a team link",
+      "ok": true
+    },
+    {
+      "name": "loop 2: employee opens team link -> preconfigured, \"Send to Sam\"",
+      "ok": true
+    },
+    {
+      "name": "saved list, backup export, delete and restore",
+      "ok": true
+    },
+    {
+      "name": "keyboard: skip link is first, controls reachable, dialog traps Escape",
+      "ok": true
+    },
+    {
+      "name": "desktop: live results panel sits beside the timesheet",
+      "ok": true
+    },
+    {
+      "name": "header: Tools and Help navigate to the tool list and instructions",
+      "ok": true
+    },
+    {
+      "name": "biweekly page opens the calculator in 2-week mode with week-by-week overtime",
+      "ok": true
+    },
+    {
+      "name": "hours calculator: default 9:00-17:30 minus 30 = 8:00; updates hash",
+      "ok": true
+    },
+    {
+      "name": "hours calculator: shared result link restores inputs",
+      "ok": true
+    },
+    {
+      "name": "overtime calculator: $20, 46 h -> $980.00, OT $180.00",
+      "ok": true
+    },
+    {
+      "name": "time to decimal: 8:20 -> 8.33 via link; 7.75 -> 7:45",
+      "ok": true
+    },
+    {
+      "name": "military time: 7:30 PM -> 1930; 0005 -> 12:05 AM",
+      "ok": true
+    },
+    {
+      "name": "time duration: Mon 8:00 -> Wed 17:30 = 2 d 9 h 30 min (57:30); 9:15 AM + 7:45 = 5:00 PM",
+      "ok": true
+    },
+    {
+      "name": "printable timesheet downloads a blank biweekly A4 PDF",
+      "ok": true
+    },
+    {
+      "name": "growth beacon: one batch with event counts + attribution only, sent when the page is hidden",
+      "ok": true
+    },
+    {
+      "name": "pages render meaningful content with JavaScript disabled (SEO)",
+      "ok": true
+    },
+    {
+      "name": "offline: after first visit, calculator and tool pages load with no network",
+      "ok": true
+    }
+  ]
+}
