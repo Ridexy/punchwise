@@ -79,7 +79,16 @@ Useful cuts:
 - **Referral-to-calculation conversion:** `calculation_completed` ÷ `calculator_opened`, filtered to `source IN ('shared_result','coworker_invitation')`.
 - **Key growth measure:** `calculator_opened` where source is `shared_result` or `coworker_invitation`, ÷ `calculation_completed` (all sources), over the same 30 days.
 
-The endpoint, permission name and `_sample_interval` column come from memory of Cloudflare's docs; the docs site
-couldn't be reached from the build environment. Check them on first use. The write side is verified against
-Cloudflare's own type definitions (`@cloudflare/workers-types`) and wrangler's config schema, and it was run in Cloudflare's
-local runtime (`wrangler dev`), which recognised the binding.
+**Verified against Cloudflare's docs on 2026-11-25:** the SQL API endpoint, the **Account | Account Analytics | Read**
+token permission, the `_sample_interval` column and the `INTERVAL '1' DAY` syntax are all as above.
+
+## Free-tier capacity (Cloudflare docs, 2026-11-25)
+| Resource | Workers Free | Our usage |
+|---|---|---|
+| Static asset requests (every page, script, image) | Free and unlimited | All page views |
+| Worker requests | 100,000 per day | 1 per visit that triggers events (`POST /api/e`) |
+| Analytics Engine data points written | 100,000 per day | 1 per distinct event in a visit, typically 2–4, so roughly 25k–50k calculator visits a day |
+| Analytics Engine read queries | 10,000 per day | Only when you run reports |
+
+Cloudflare's docs also say Analytics Engine usage is **not currently billed** (pricing is published in advance). If a daily
+cap is reached, only event collection stops for the rest of that day; the static site is unaffected.

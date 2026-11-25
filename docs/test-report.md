@@ -2,6 +2,11 @@
 
 Date: 2026-11-25 · Build: originally `idea-to-content/timecard/` (branch `claude/trusting-meitner-xkxyiv`), now this repo
 
+**Round 5 (live): the deployed site https://punchwise.alriol92-ar.workers.dev passes all 78 browser tests** (`BASE_URL=… npm run e2e`;
+against a live URL the suite answers `/api/e` locally so test runs don't add events to real analytics). Live curl checks: pages 200, missing page 404,
+trailing-slash 307, security headers present, `/api/e` POST 204 / GET 405. One manual `calculator_opened` / `direct` event was
+posted to the live collector during this check (2026-11-25).
+
 **Round 4 (deploy target switched to a Cloudflare Worker with static assets): 66/66 unit tests and 78/78 browser tests pass on
 `wrangler dev` (local Workers runtime). `npx wrangler deploy --dry-run`, the same deploy command Cloudflare runs, reads 40 asset files and
 the `EVENTS` + `ASSETS` bindings. Also checked with curl: 404 page with status 404, trailing-slash redirect, `_headers` security and

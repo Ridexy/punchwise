@@ -116,8 +116,9 @@ just the growth-event collector `POST /api/e`. All of this is configured in `wra
 
 **Free-tier note.** Only `/api/e` runs Worker code: one request per visit that triggers an event, sent when the visitor
 leaves or switches away. It counts toward the Workers free daily request allowance. If that allowance runs out, only event
-collection stops; the static site keeps working. Check Cloudflare's current limits for Worker requests and
-Analytics Engine writes before relying on high volume.
+collection stops; the static site keeps working. Verified limits (Cloudflare docs, 2026-11-25): static assets free and
+unlimited; Worker requests 100,000/day; Analytics Engine 100,000 data points/day (about 25k–50k calculator visits). See
+`docs/growth-metrics.md`.
 
 **Local check that matches production:**
 

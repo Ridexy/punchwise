@@ -19,6 +19,8 @@ const browser = await chromium.launch();
 async function ctxFor(device) {
   const ctx = await browser.newContext({ ...(device ? devices[device] : { viewport: { width: 1280, height: 900 } }), acceptDownloads: true, baseURL: BASE });
   await ctx.grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
+  // Against a live deployment, answer /api/e locally so test runs never pollute real growth analytics.
+  if (!/127\.0\.0\.1|localhost/.test(BASE)) await ctx.route('**/api/e', (r) => r.fulfill({ status: 204 }));
   return ctx;
 }
 function watch(page, label) {
