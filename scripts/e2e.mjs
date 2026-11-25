@@ -24,7 +24,8 @@ async function ctxFor(device) {
   return ctx;
 }
 function watch(page, label) {
-  page.on('console', (m) => { if (m.type() === 'error') (errorsByPage[label] ||= []).push(m.text()); });
+  // Ignore third-party analytics loading failures (blocked networks, ad blockers): not app errors.
+  page.on('console', (m) => { if (m.type() === 'error' && !/cloudflareinsights/.test(m.text() + (m.location()?.url || ''))) (errorsByPage[label] ||= []).push(m.text()); });
   page.on('pageerror', (e) => (errorsByPage[label] ||= []).push(String(e)));
 }
 const ready = (p) => p.waitForSelector('[data-testid=day-0] input[aria-label$="clock in"]:not([disabled])');
