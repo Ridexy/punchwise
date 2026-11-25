@@ -31,8 +31,9 @@ scripts/prerender.mjs  static HTML for every route + sitemap.xml + robots.txt + 
 scripts/sw.mjs         offline service worker (runs after prerender)
 scripts/e2e.mjs        browser QA suite (Playwright)
 scripts/icons.mjs      regenerates PNG icons and og.jpg
-functions/api/e.ts     growth-event collector (Pages Function -> Workers Analytics Engine)
-wrangler.toml          Pages config: output dir + Analytics Engine binding
+worker/index.ts        Worker entry: /api/* -> collector, everything else -> static assets
+worker/collector.ts    growth-event collector (-> Workers Analytics Engine)
+wrangler.toml          Worker + static assets config, Analytics Engine binding
 .env.production        public build settings (site URL, analytics token)
 ```
 
@@ -66,10 +67,10 @@ npm test
 ```
 
 End-to-end browser QA. It needs Playwright and Chromium, and writes `docs/test-report-e2e.json`.
-Run it against Cloudflare's local runtime, which also serves the `/api/e` function, in two terminals:
+Run it against Cloudflare's local runtime, which also serves the `/api/e` Worker route, in two terminals:
 
 ```bash
-npm run pages:dev
+npm run cf:dev
 ```
 
 ```bash
@@ -88,39 +89,47 @@ Edit that file rather than the Cloudflare dashboard. All values are read **at bu
 | `VITE_CF_BEACON_TOKEN` | Cloudflare Web Analytics token. Empty turns analytics off. The token is public by design. | empty |
 | `VITE_EVENTS_URL` | Where growth batches are sent. Empty means the built-in `/api/e` collector; `off` disables sending. See `docs/growth-metrics.md`. | `/api/e` |
 
-## Deploying to Cloudflare Pages (free tier)
-1. Push this repository to GitHub.
-2. In the Cloudflare dashboard, go to **Workers & Pages → Create → Pages → Connect to Git**, then pick the repo.
-3. Build settings:
-   - Framework preset: **None**
-   - Root directory: *(leave empty: the app is at the repo root)*
-   - Build command: **`npm run build`**
-   - Build output directory: **`dist`**
+## Deploying to Cloudflare (Workers free tier, connected to Git)
+The site deploys as a **Cloudflare Worker with static assets**. Every page and file in `dist/` is served directly by Cloudflare
+(static asset requests are free and don't run any code). The small Worker in `worker/` only runs for `/api/*`, which today is
+just the growth-event collector `POST /api/e`. All of this is configured in `wrangler.toml`.
 
-   The Node version comes from `.nvmrc` (22). `wrangler.toml` sets the output directory and
-   connects the **Analytics Engine** dataset `punchwise_events` to the `/api/e` function as the binding `EVENTS`. Cloudflare reads
-   that file on deploy, so there is no dashboard step for the binding. The dataset is created on the first write.
-4. **Site URL.** `.env.production` sets `VITE_SITE_URL=https://punchwise.pages.dev`, the free Cloudflare subdomain.
-   It's used for canonical links, the sitemap, PDF footers, share cards and invites. After the first deploy, check the
-   address Cloudflare actually assigned (it adds a suffix such as `punchwise-xyz.pages.dev` if `punchwise` is taken). If it differs,
-   put it in `.env.production` and push.
-   **Later, with punchwise.com:** add it under **Custom domains**, change `VITE_SITE_URL` to `https://punchwise.com` and push. The
-   pages.dev address keeps working, and the canonical tags then point search engines at the new domain.
-5. **Web Analytics** (page views): go to **Analytics & Logs → Web Analytics → Add a site**, choose the manual JS snippet,
-   copy the token, paste it into `VITE_CF_BEACON_TOKEN` in `.env.production`, then commit and push.
-   (Cloudflare can also inject the beacon automatically for Pages sites. Use one method only.)
-6. Deploy. Pages serves `dist/404.html` for unknown URLs, and `_headers` sets caching and security headers.
-7. Check it: open the site, use the calculator, switch tabs, then go to **Workers & Pages → punchwise → Functions**
-   and confirm `/api/e` requests returning 204.
-8. Add the site to Google Search Console and submit `/sitemap.xml`.
+1. In the Cloudflare dashboard, go to **Workers & Pages → Create → Import a repository**, then pick **Ridexy/punchwise**.
+2. Settings:
+   - Project name: `punchwise` (must match `name` in `wrangler.toml`)
+   - Build command: `npm run build`
+   - Deploy command: `npx wrangler deploy`
+   - Root directory: `/`
 
-**Free-tier note.** `/api/e` is the only route that runs server code. Every page and file is served as a static asset.
-Each visit that triggers an event sends **one** request when the visitor leaves or switches away, and that counts toward
-the Workers free daily request allowance. If the allowance runs out, only `/api/e` is affected and the site keeps working.
-Check Cloudflare's current limits for Functions requests and Analytics Engine writes before you rely on high volume. They couldn't be
-looked up from the build environment.
+   The Node version comes from `.nvmrc` (22). `wrangler.toml` connects the Analytics Engine dataset `punchwise_events`
+   (binding `EVENTS`); it is created automatically on the first event.
+3. After the first successful deploy, open the Worker's **Overview** or **Domains** tab and copy its address, which looks like
+   `https://punchwise.<your-subdomain>.workers.dev`. Put it in `VITE_SITE_URL` in `.env.production` and push.
+   It's used for canonical links, the sitemap, PDF footers, share cards and invites.
+4. **Web Analytics** (page views): go to **Analytics & Logs → Web Analytics → Add a site**, choose the manual JS snippet,
+   paste the token into `VITE_CF_BEACON_TOKEN` in `.env.production`, then push.
+5. Check it: use the calculator, switch tabs, then confirm `POST /api/e 204` under the Worker's **Observability → Logs**.
+6. Add the site to Google Search Console and submit `/sitemap.xml` (after the custom domain is connected is best).
 
-**Custom domain:** add it under **Custom domains** in the Pages project, update `VITE_SITE_URL`, and push.
+**Later, with punchwise.com:** in the Worker's **Domains** tab, add `punchwise.com` as a custom domain, set
+`VITE_SITE_URL=https://punchwise.com` and push.
+
+**Free-tier note.** Only `/api/e` runs Worker code: one request per visit that triggers an event, sent when the visitor
+leaves or switches away. It counts toward the Workers free daily request allowance. If that allowance runs out, only event
+collection stops; the static site keeps working. Check Cloudflare's current limits for Worker requests and
+Analytics Engine writes before relying on high volume.
+
+**Local check that matches production:**
+
+```bash
+npm run cf:dev
+```
+
+That builds and serves the site and the Worker on http://127.0.0.1:8788. To see exactly what Cloudflare would deploy:
+
+```bash
+npx wrangler deploy --dry-run
+```
 
 ## Database migrations
 There is no server database. If cloud sync is added later (see the "Pro" ideas in the brief):

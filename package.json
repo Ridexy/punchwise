@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && tsc -p functions/tsconfig.json && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs && node scripts/sw.mjs",
+    "build": "tsc --noEmit && tsc -p worker/tsconfig.json && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs && node scripts/sw.mjs",
     "preview": "vite preview --port 4173 --strictPort",
     "test": "vitest run",
     "e2e": "node scripts/e2e.mjs",
     "icons": "node scripts/icons.mjs",
-    "pages:dev": "npm run build && wrangler pages dev dist --port 8788",
-    "typecheck": "tsc --noEmit && tsc -p functions/tsconfig.json"
+    "typecheck": "tsc --noEmit && tsc -p worker/tsconfig.json",
+    "cf:dev": "npm run build && wrangler dev --port 8788 --ip 127.0.0.1"
   },
   "dependencies": {
     "idb": "8.0.4",

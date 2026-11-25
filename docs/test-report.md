@@ -2,6 +2,11 @@
 
 Date: 2026-11-25 · Build: originally `idea-to-content/timecard/` (branch `claude/trusting-meitner-xkxyiv`), now this repo
 
+**Round 4 (deploy target switched to a Cloudflare Worker with static assets): 66/66 unit tests and 78/78 browser tests pass on
+`wrangler dev` (local Workers runtime). `npx wrangler deploy --dry-run`, the same deploy command Cloudflare runs, reads 40 asset files and
+the `EVENTS` + `ASSETS` bindings. Also checked with curl: 404 page with status 404, trailing-slash redirect, `_headers` security and
+cache headers applied, `/api/e` 204/405/403, other `/api/*` 404.**
+
 **Result (round 3, growth-event collector added): 65/65 unit tests and 78/78 browser tests pass. The browser suite was run against
 Cloudflare's local Pages runtime (`wrangler pages dev`, workerd), so Pages routing (404 page, trailing-slash redirects) and the `/api/e` function were exercised too.**
 

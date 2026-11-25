@@ -4,7 +4,7 @@
  *   names, pay rates or any other value typed by the user.
  * - No cookies, no IDs. Attribution lives in sessionStorage for the visit only.
  * - Events are counted in memory and sent as ONE small batch per visit (when the page is hidden),
- *   to the same-site collector /api/e (functions/api/e.ts). VITE_EVENTS_URL=off disables sending.
+ *   to the same-site collector /api/e (worker/collector.ts). VITE_EVENTS_URL=off disables sending.
  */
 import type { Attribution, EventName } from './events';
 export { EVENTS, type Attribution, type EventName } from './events';

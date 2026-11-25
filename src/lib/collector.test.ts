@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { onRequest, parseBatch } from '../../functions/api/e';
+import { onRequest, parseBatch } from '../../worker/collector';
+import worker from '../../worker/index';
 import { batchBody } from './track';
 
 type Point = { indexes?: unknown[]; blobs?: unknown[]; doubles?: number[] };
@@ -70,5 +71,17 @@ describe('POST /api/e collector', () => {
   it('a failing write does not fail the request', async () => {
     const env = { EVENTS: { writeDataPoint: () => { throw new Error('quota'); } } };
     expect((await call(post(JSON.stringify({ a: 'direct', e: { calculator_opened: 1 } })), env)).status).toBe(204);
+  });
+});
+
+describe('worker router', () => {
+  const assets = { fetch: async (r: Request) => new Response('asset:' + new URL(r.url).pathname) };
+  it('sends /api/e to the collector and everything else to static assets', async () => {
+    const { points, env } = fakeEnv();
+    const e = { ...env, ASSETS: assets };
+    expect((await worker.fetch(post(JSON.stringify({ a: 'direct', e: { calculator_opened: 1 } })), e)).status).toBe(204);
+    expect(points).toHaveLength(1);
+    expect(await (await worker.fetch(new Request('https://punchwise.com/overtime-calculator/'), e)).text()).toBe('asset:/overtime-calculator/');
+    expect((await worker.fetch(new Request('https://punchwise.com/api/other'), e)).status).toBe(404);
   });
 });

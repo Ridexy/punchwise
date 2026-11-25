@@ -1,5 +1,5 @@
 /**
- * Aggregate growth-event collector (Cloudflare Pages Function, route: POST /api/e).
+ * Aggregate growth-event collector (route: POST /api/e), called from worker/index.ts.
  *
  * Accepts ONE batch per visit: {"a": "<attribution>", "e": {"<event>": <count>, ...}}
  * Stores only event name, attribution category and a count in Workers Analytics Engine.
@@ -7,11 +7,11 @@
  * every value must match an allow-list or the whole batch is dropped.
  * If the EVENTS binding is not configured, it accepts and discards (the site keeps working).
  */
-import { ATTRIBUTIONS, EVENTS } from '../../src/lib/events';
+import { ATTRIBUTIONS, EVENTS } from '../src/lib/events';
 
-/** Minimal shapes (match @cloudflare/workers-types AnalyticsEngineDataset / PagesFunction context). */
+/** Minimal shapes (match @cloudflare/workers-types AnalyticsEngineDataset). */
 type Dataset = { writeDataPoint(point: { indexes?: string[]; blobs?: string[]; doubles?: number[] }): void };
-type Env = { EVENTS?: Dataset };
+export type Env = { EVENTS?: Dataset };
 type Context = { request: Request; env: Env };
 
 const MAX_BODY = 1024;

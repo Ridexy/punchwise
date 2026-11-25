@@ -1,10 +1,18 @@
-# Cloudflare Pages project config (the presence of pages_build_output_dir marks this as Pages).
-# Deploys from Git pick this up automatically; no dashboard binding step is needed.
+# Cloudflare Worker with static assets (Workers & Pages -> Worker connected to Git).
+# The site is pre-rendered to ./dist and served as static assets; the Worker script only
+# runs for /api/* (growth-event collector). Deploy command: npx wrangler deploy
 name = "punchwise"
-pages_build_output_dir = "dist"
+main = "worker/index.ts"
 compatibility_date = "2026-10-15"
 
-# Growth events collector (functions/api/e.ts) -> Workers Analytics Engine dataset.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "404-page"       # serves dist/404.html with status 404
+html_handling = "auto-trailing-slash" # /overtime-calculator -> /overtime-calculator/
+run_worker_first = ["/api/*"]
+
+# Growth events collector (worker/collector.ts) -> Workers Analytics Engine dataset.
 # The dataset is created automatically on the first write.
 [[analytics_engine_datasets]]
 binding = "EVENTS"

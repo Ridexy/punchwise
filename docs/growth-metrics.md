@@ -1,6 +1,6 @@
 # Punchwise growth measurement spec
 
-This is what we measure, how, and what stays private. Implemented in `src/lib/track.ts` and `functions/api/e.ts`.
+This is what we measure, how, and what stays private. Implemented in `src/lib/track.ts` and `worker/collector.ts`.
 
 ## Principles
 - Only an **event name** and an **attribution category** are ever sent. Never time entries, names, employers,
@@ -53,7 +53,7 @@ Caveat: messaging apps often hide the referrer, so `?ref` tags are the reliable 
 - **Browser** (`src/lib/track.ts`): counts events in memory and sends **one** JSON batch per visit with
   `navigator.sendBeacon`, when the page is hidden or closed: `{"a":"<attribution>","e":{"<event>":<count>,…}}`.
   There's no request while the calculator is being used. `VITE_EVENTS_URL=off` disables it.
-- **Collector** (`functions/api/e.ts`, a Cloudflare Pages Function at `POST /api/e`):
+- **Collector** (`worker/collector.ts`, served by the Cloudflare Worker at `POST /api/e`):
   - accepts same-site posts only (403 otherwise) and POST only (405 otherwise);
   - validates every key and value against the allow-lists in `src/lib/events.ts` and caps counts at 50, silently dropping anything else;
   - writes one Analytics Engine data point per event: `blob1` = event, `blob2` = attribution, `double1` = count, `index1` = event;
@@ -82,4 +82,4 @@ Useful cuts:
 The endpoint, permission name and `_sample_interval` column come from memory of Cloudflare's docs; the docs site
 couldn't be reached from the build environment. Check them on first use. The write side is verified against
 Cloudflare's own type definitions (`@cloudflare/workers-types`) and wrangler's config schema, and it was run in Cloudflare's
-local runtime (`wrangler pages dev`), which recognised the binding.
+local runtime (`wrangler dev`), which recognised the binding.
