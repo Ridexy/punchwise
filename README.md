@@ -132,6 +132,20 @@ That builds and serves the site and the Worker on http://127.0.0.1:8788. To see 
 npx wrangler deploy --dry-run
 ```
 
+## Search engine submission
+- **Google:** add the site in Google Search Console and submit `/sitemap.xml`. Google does not use IndexNow.
+- **Bing, Yandex, Seznam, Naver, Yep (IndexNow):** the key file `public/f5aee7761deb4bd0ac23fa26be528f70.txt` proves ownership.
+  Keep it deployed and don't change its contents. Submit **only new or changed pages**, not the whole site on every deploy.
+  Submissions so far were made through the OpenSEO "Punchwise" project. Anyone can also submit directly:
+
+  ```bash
+  curl -X POST https://api.indexnow.org/indexnow -H 'content-type: application/json' \
+    -d '{"host":"punchwise.alriol92-ar.workers.dev","key":"f5aee7761deb4bd0ac23fa26be528f70","urlList":["https://punchwise.alriol92-ar.workers.dev/"]}'
+  ```
+
+- **After moving to punchwise.com:** the key file deploys with the site, so it works on the new host too. Submit the new URLs,
+  and the old workers.dev URLs if they now redirect.
+
 ## Database migrations
 There is no server database. If cloud sync is added later (see the "Pro" ideas in the brief):
 - **Local data:** IndexedDB schema changes go through `openDB(DB_NAME, VERSION, { upgrade })` in
