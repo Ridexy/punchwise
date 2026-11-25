@@ -1,6 +1,6 @@
 # Cloudflare Pages project config (the presence of pages_build_output_dir marks this as Pages).
 # Deploys from Git pick this up automatically; no dashboard binding step is needed.
-name = "hourtally"
+name = "punchwise"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-10-15"
 
@@ -8,4 +8,4 @@ compatibility_date = "2026-10-15"
 # The dataset is created automatically on the first write.
 [[analytics_engine_datasets]]
 binding = "EVENTS"
-dataset = "hourtally_events"
+dataset = "punchwise_events"

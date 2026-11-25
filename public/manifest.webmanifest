@@ -1,6 +1,6 @@
 {
-  "name": "HourTally: Time Card Calculator",
-  "short_name": "HourTally",
+  "name": "Punchwise: Time Card Calculator",
+  "short_name": "Punchwise",
   "description": "Free time card calculator. Hours, breaks, overtime and signed timesheet PDFs.",
   "start_url": "/",
   "scope": "/",

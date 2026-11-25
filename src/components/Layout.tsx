@@ -12,7 +12,7 @@ function Logo() {
         <circle cx="16" cy="16" r="9" fill="none" stroke="#fff" strokeWidth="2.5" />
         <path d="M16 11v5.5l3.5 2" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
       </svg>
-      <span className="text-lg">Hour<span className="text-brand-600">Tally</span></span>
+      <span className="text-lg">Punch<span className="text-brand-600">wise</span></span>
     </Link>
   );
 }

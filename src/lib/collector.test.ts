@@ -10,7 +10,7 @@ function fakeEnv() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const call = (req: Request, env: any) => onRequest({ request: req, env });
 const post = (body: string, headers: Record<string, string> = {}) =>
-  new Request('https://hourtally.pages.dev/api/e', { method: 'POST', body, headers: { 'content-type': 'application/json', ...headers } });
+  new Request('https://punchwise.com/api/e', { method: 'POST', body, headers: { 'content-type': 'application/json', ...headers } });
 
 describe('client batch body', () => {
   it('is null when nothing happened, compact JSON otherwise', () => {
@@ -41,7 +41,7 @@ describe('parseBatch (strict allow-list)', () => {
 describe('POST /api/e collector', () => {
   it('writes one data point per event: blobs [event, attribution], double = count, index = event', async () => {
     const { points, env } = fakeEnv();
-    const res = await call(post(JSON.stringify({ a: 'shared_result', e: { calculator_opened: 1, calculation_completed: 1 } }), { origin: 'https://hourtally.pages.dev' }), env);
+    const res = await call(post(JSON.stringify({ a: 'shared_result', e: { calculator_opened: 1, calculation_completed: 1 } }), { origin: 'https://punchwise.com' }), env);
     expect(res.status).toBe(204);
     expect(points).toEqual([
       { indexes: ['calculator_opened'], blobs: ['calculator_opened', 'shared_result'], doubles: [1] },
@@ -56,7 +56,7 @@ describe('POST /api/e collector', () => {
   it('rejects cross-site posts and non-POST methods', async () => {
     const { points, env } = fakeEnv();
     expect((await call(post('{}', { origin: 'https://evil.example' }), env)).status).toBe(403);
-    expect((await call(new Request('https://hourtally.pages.dev/api/e'), env)).status).toBe(405);
+    expect((await call(new Request('https://punchwise.com/api/e'), env)).status).toBe(405);
     expect(points).toHaveLength(0);
   });
   it('invalid batches are accepted silently but not stored', async () => {

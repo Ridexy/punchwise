@@ -1,4 +1,4 @@
-# HourTally: free time card calculator
+# Punchwise: free time card calculator
 
 A privacy-first, mobile-first time card calculator. Users enter clock-in and clock-out times, breaks
 and overtime rules, then get weekly hours and pay and send or print a signed timesheet PDF.
@@ -83,7 +83,7 @@ Edit that file rather than the Cloudflare dashboard. All values are read **at bu
 
 | Variable | Purpose | Default |
 |---|---|---|
-| `VITE_SITE_URL` | Public URL with no trailing slash. Used for canonical tags, sitemap, Open Graph tags and the PDF footer link. | `https://hourtally.pages.dev` |
+| `VITE_SITE_URL` | Public URL with no trailing slash. Used for canonical tags, sitemap, Open Graph tags and the PDF footer link. | `https://punchwise.com` |
 | `VITE_CF_BEACON_TOKEN` | Cloudflare Web Analytics token. Empty turns analytics off. The token is public by design. | empty |
 | `VITE_EVENTS_URL` | Where growth batches are sent. Empty means the built-in `/api/e` collector; `off` disables sending. See `docs/timecard/growth-metrics.md`. | `/api/e` |
 
@@ -97,14 +97,16 @@ Edit that file rather than the Cloudflare dashboard. All values are read **at bu
    - Build output directory: **`dist`**
 
    The Node version comes from `timecard/.nvmrc` (22). `timecard/wrangler.toml` sets the output directory and
-   connects the **Analytics Engine** dataset `hourtally_events` to the `/api/e` function as the binding `EVENTS`. Cloudflare reads
+   connects the **Analytics Engine** dataset `punchwise_events` to the `/api/e` function as the binding `EVENTS`. Cloudflare reads
    that file on deploy, so there is no dashboard step for the binding. The dataset is created on the first write.
-4. Edit `timecard/.env.production`: set `VITE_SITE_URL` to your Pages URL (for example `https://hourtally.pages.dev`) or your custom domain.
+4. **Domain.** The site URL in `timecard/.env.production` is `https://punchwise.com`, and it's used for canonical links, the sitemap, PDF footers, share cards and invites.
+   After buying the domain, add it in the Pages project under **Custom domains** *before* the first public launch. If you launch
+   before the domain is connected, temporarily set `VITE_SITE_URL=https://punchwise.pages.dev` (or whatever Pages URL you're given) and push.
 5. **Web Analytics** (page views): go to **Analytics & Logs → Web Analytics → Add a site**, choose the manual JS snippet,
    copy the token, paste it into `VITE_CF_BEACON_TOKEN` in `.env.production`, then commit and push.
    (Cloudflare can also inject the beacon automatically for Pages sites. Use one method only.)
 6. Deploy. Pages serves `dist/404.html` for unknown URLs, and `_headers` sets caching and security headers.
-7. Check it: open the site, use the calculator, switch tabs, then go to **Workers & Pages → hourtally → Functions**
+7. Check it: open the site, use the calculator, switch tabs, then go to **Workers & Pages → punchwise → Functions**
    and confirm `/api/e` requests returning 204.
 8. Add the site to Google Search Console and submit `/sitemap.xml`.
 

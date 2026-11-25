@@ -27,7 +27,7 @@ export function ShareCardModal({ open, onClose, startDate, days, res, onDone }: 
   }, [open, mode, startDate, days, res, onDone]);
 
   if (!open) return null;
-  const filename = `hourtally-${days > 7 ? 'two-weeks' : 'my-week'}-${startDate}.png`;
+  const filename = `punchwise-${days > 7 ? 'two-weeks' : 'my-week'}-${startDate}.png`;
   const shareImage = async () => {
     if (!img) return;
     track('share_card_downloaded');

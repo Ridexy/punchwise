@@ -1,7 +1,7 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import type { Timesheet } from './model';
 
-const DB_NAME = 'hourtally';
+const DB_NAME = 'punchwise';
 const VERSION = 1;
 let dbp: Promise<IDBPDatabase> | null = null;
 /** True when IndexedDB is unavailable (some private modes). Data then lives in memory only. */
@@ -52,16 +52,17 @@ export async function requestPersistence(): Promise<boolean> {
   try { return (await navigator.storage?.persist?.()) ?? false; } catch { return false; }
 }
 
-export type Backup = { app: 'hourtally'; version: 1; exportedAt: string; sheets: Timesheet[] };
+export type Backup = { app: 'punchwise'; version: 1; exportedAt: string; sheets: Timesheet[] };
 
 export async function exportBackup(): Promise<Backup> {
-  return { app: 'hourtally', version: 1, exportedAt: new Date().toISOString(), sheets: await listSheets() };
+  return { app: 'punchwise', version: 1, exportedAt: new Date().toISOString(), sheets: await listSheets() };
 }
 
 /** Imports sheets from a backup file; returns how many were imported. Existing ids are overwritten. */
 export async function importBackup(json: string): Promise<number> {
   const o = JSON.parse(json);
-  if (!o || o.app !== 'hourtally' || !Array.isArray(o.sheets)) throw new Error('This file is not an HourTally backup.');
+  // 'punchwise' = backups made before the rename
+  if (!o || (o.app !== 'punchwise' && o.app !== 'punchwise') || !Array.isArray(o.sheets)) throw new Error('This file is not a Punchwise backup.');
   let n = 0;
   for (const s of o.sheets) {
     if (s && typeof s.id === 'string' && typeof s.startDate === 'string' && Array.isArray(s.days) && s.settings) {

@@ -30,7 +30,7 @@ export default function Saved() {
   };
   const backup = async () => {
     const b = await exportBackup();
-    downloadBlob(new Blob([JSON.stringify(b)], { type: 'application/json' }), `hourtally-backup-${b.exportedAt.slice(0, 10)}.json`);
+    downloadBlob(new Blob([JSON.stringify(b)], { type: 'application/json' }), `punchwise-backup-${b.exportedAt.slice(0, 10)}.json`);
   };
   const restore = async (f: File) => {
     try { const n = await importBackup(await f.text()); showToast(`Restored ${n} timesheet${n === 1 ? '' : 's'}`); reload(); }

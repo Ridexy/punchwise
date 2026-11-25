@@ -20,7 +20,7 @@ await shot(mark(512), 512, 512, 'public/icons/icon-512.png');
 await shot(mark(512, 6), 512, 512, 'public/icons/icon-maskable-512.png');
 await shot(mark(180, 3), 180, 180, 'public/icons/apple-touch-icon.png');
 await shot(`<div style="width:1200px;height:630px;background:linear-gradient(135deg,#0f172a,#172554);color:#fff;font-family:system-ui,sans-serif;display:flex;flex-direction:column;justify-content:center;padding:0 90px;box-sizing:border-box">
-  <div style="display:flex;align-items:center;gap:20px">${mark(84)}<span style="font-size:54px;font-weight:800">HourTally</span></div>
+  <div style="display:flex;align-items:center;gap:20px">${mark(84)}<span style="font-size:54px;font-weight:800">Punchwise</span></div>
   <div style="font-size:66px;font-weight:800;line-height:1.1;margin-top:40px">Time card calculator<br>with breaks &amp; overtime</div>
   <div style="font-size:30px;opacity:.8;margin-top:28px">Free · No sign-up · Send a signed timesheet PDF</div></div>`, 1200, 630, 'public/og.jpg');
 await browser.close();

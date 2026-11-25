@@ -98,15 +98,15 @@ describe('privacy: redact before sharing', () => {
 import { classify, withRef } from './track';
 describe('attribution', () => {
   it('classifies arrivals', () => {
-    expect(classify('/', '?ref=invite', '', 'hourtally.app')).toBe('coworker_invitation');
-    expect(classify('/', '?ref=embed', 'https://blog.example.com/', 'hourtally.app')).toBe('embedded_calculator');
-    expect(classify('/', '?ref=card', '', 'hourtally.app')).toBe('shared_result');
-    expect(classify('/view/', '', '', 'hourtally.app')).toBe('shared_result');
-    expect(classify('/', '', 'https://www.google.com/', 'hourtally.app')).toBe('organic_search');
-    expect(classify('/', '', 'https://duckduckgo.com/', 'hourtally.app')).toBe('organic_search');
-    expect(classify('/', '', '', 'hourtally.app')).toBe('direct');
-    expect(classify('/', '', 'https://hourtally.app/overtime-calculator/', 'hourtally.app')).toBe('direct');
-    expect(classify('/', '', 'https://reddit.com/r/x', 'hourtally.app')).toBe('other_referral');
+    expect(classify('/', '?ref=invite', '', 'punchwise.com')).toBe('coworker_invitation');
+    expect(classify('/', '?ref=embed', 'https://blog.example.com/', 'punchwise.com')).toBe('embedded_calculator');
+    expect(classify('/', '?ref=card', '', 'punchwise.com')).toBe('shared_result');
+    expect(classify('/view/', '', '', 'punchwise.com')).toBe('shared_result');
+    expect(classify('/', '', 'https://www.google.com/', 'punchwise.com')).toBe('organic_search');
+    expect(classify('/', '', 'https://duckduckgo.com/', 'punchwise.com')).toBe('organic_search');
+    expect(classify('/', '', '', 'punchwise.com')).toBe('direct');
+    expect(classify('/', '', 'https://punchwise.com/overtime-calculator/', 'punchwise.com')).toBe('direct');
+    expect(classify('/', '', 'https://reddit.com/r/x', 'punchwise.com')).toBe('other_referral');
   });
   it('withRef keeps the fragment after the query', () => {
     expect(withRef('https://x.app/view/#d=abc', 'share')).toBe('https://x.app/view/?ref=share#d=abc');

@@ -268,9 +268,9 @@ for (const dev of ['iPhone SE', 'Pixel 7', null]) {
     await p.keyboard.press('Escape');
   });
   await test('invite a coworker: editable message flows into WhatsApp link', async () => {
-    await p.getByRole('button', { name: 'Share HourTally' }).click();
+    await p.getByRole('button', { name: 'Share Punchwise' }).click();
     const txt = await p.inputValue('#share-text');
-    expect(/I use HourTally to calculate my work hours, breaks and overtime\. Try it free: .*\?ref=invite/.test(txt), txt);
+    expect(/I use Punchwise to calculate my work hours, breaks and overtime\. Try it free: .*\?ref=invite/.test(txt), txt);
     await p.fill('#share-text', 'Use this for your hours: ' + (await p.inputValue('#share-url')));
     const wa = decodeURIComponent(await p.getAttribute('[data-testid=share-whatsapp]', 'href'));
     expect(wa.includes('Use this for your hours:') && !wa.includes('48:45'), wa);
