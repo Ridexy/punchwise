@@ -10,10 +10,18 @@ directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"       # serves dist/404.html with status 404
 html_handling = "auto-trailing-slash" # /overtime-calculator -> /overtime-calculator/
-run_worker_first = ["/api/*"]
+run_worker_first = ["/api/*", "/admin", "/admin/"]
 
 # Growth events collector (worker/collector.ts) -> Workers Analytics Engine dataset.
 # The dataset is created automatically on the first write.
 [[analytics_engine_datasets]]
 binding = "EVENTS"
 dataset = "punchwise_events"
+
+# Admin dashboard (/admin). Not secret: account id and Web Analytics site tag.
+# Secrets are set in the dashboard (Worker > Settings > Variables and Secrets), never committed:
+#   ADMIN_TOKEN   your dashboard password (24+ random characters)
+#   CF_API_TOKEN  Cloudflare API token with Account > Account Analytics > Read
+[vars]
+CF_ACCOUNT_ID = "ea41224d7dcd54e9a53c2ce8718d3384"
+WA_SITE_TAG = "bd2cefad7d7d402ab7e7d6e70d6dad5a"

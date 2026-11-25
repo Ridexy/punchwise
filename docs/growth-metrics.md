@@ -63,6 +63,8 @@ Caveat: messaging apps often hide the referrer, so `?ref` tags are the reliable 
 - **Page views:** Cloudflare Web Analytics (cookie-free), separately.
 
 ## Reading the numbers
+The easiest way is the **admin dashboard at `/admin`** (setup in the README). It computes every metric below.
+To query directly instead:
 Analytics Engine is queried with SQL over HTTPS. Create an API token with **Account Analytics: Read**, then:
 
 ```bash

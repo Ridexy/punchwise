@@ -33,6 +33,7 @@ scripts/e2e.mjs        browser QA suite (Playwright)
 scripts/icons.mjs      regenerates PNG icons and og.jpg
 worker/index.ts        Worker entry: /api/* -> collector, everything else -> static assets
 worker/collector.ts    growth-event collector (-> Workers Analytics Engine)
+worker/admin/          /admin dashboard: page, token check, stats from Cloudflare APIs
 wrangler.toml          Worker + static assets config, Analytics Engine binding
 .env.production        public build settings (site URL, analytics token)
 ```
@@ -131,6 +132,31 @@ That builds and serves the site and the Worker on http://127.0.0.1:8788. To see 
 ```bash
 npx wrangler deploy --dry-run
 ```
+
+## Admin dashboard (`/admin`)
+A private dashboard at **`/admin`** shows traffic (Cloudflare Web Analytics) and the growth loop (Analytics Engine events)
+in one place: page views, visits, calculations, share rate, referral and invite conversion, top pages, referrers,
+countries, and events by source, for the last 7, 30 or 90 days.
+
+How it's protected: the page itself contains no data. Data comes from `/api/admin/stats`, which requires
+`Authorization: Bearer <ADMIN_TOKEN>` (checked in constant time). Every response is `no-store` and `noindex`, the page
+has a strict Content-Security-Policy, and it loads no third-party scripts. The Cloudflare API token never leaves the Worker.
+
+**One-time setup** (Cloudflare dashboard → **Workers & Pages → punchwise → Settings → Variables and Secrets → Add**, type **Secret**):
+
+| Secret | Value |
+|---|---|
+| `ADMIN_TOKEN` | Your dashboard password: 24+ random characters from a password manager. Don't reuse a password. |
+| `CF_API_TOKEN` | A Cloudflare API token: **My Profile → API Tokens → Create Token → Create Custom Token**, permission **Account → Account Analytics → Read**, account resources = your account. |
+
+`CF_ACCOUNT_ID` and `WA_SITE_TAG` are plain settings in `wrangler.toml`. Secrets survive redeploys, so you only set them once.
+Then open `https://<your site>/admin` and enter the admin token. Tick "Remember on this device" only on your own computer.
+
+If the traffic section shows "Web Analytics unavailable", the Web Analytics site tag may differ from the beacon token. Open
+Cloudflare **Web Analytics**, click the site, copy the ID from the page address (`…/web-analytics/sites/<site tag>`), put it in
+`WA_SITE_TAG` in `wrangler.toml` and push. The growth section works independently of this.
+
+To rotate the admin token, change the `ADMIN_TOKEN` secret. Every saved login stops working at once.
 
 ## Search engine submission
 - **Google:** add the site in Google Search Console and submit `/sitemap.xml`. Google does not use IndexNow.
