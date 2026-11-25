@@ -5,8 +5,8 @@ import { useToast } from '../components/useToast';
 import { periodLabel } from '../components/Calculator';
 import { deleteSheet, exportBackup, importBackup, listSheets, memoryOnly, saveSheet, setMeta } from '../lib/db';
 import { downloadBlob } from '../lib/download';
-import { nextPeriodCopy, newId, type Timesheet } from '../lib/model';
-import { computePeriod, formatDecimal, formatHM } from '../lib/time';
+import { computeSheet, nextPeriodCopy, newId, type Timesheet } from '../lib/model';
+import { formatDecimal, formatHM } from '../lib/time';
 
 export default function Saved() {
   const [sheets, setSheets] = useState<Timesheet[] | null>(null);
@@ -53,7 +53,7 @@ export default function Saved() {
       ) : (
         <ul className="flex flex-col gap-3">
           {sheets.map((t) => {
-            const r = computePeriod(t.days, t.settings.rule, t.settings.rate, t.settings.rounding);
+            const r = computeSheet(t);
             return (
               <li key={t.id} data-testid="saved-item">
                 <Card>

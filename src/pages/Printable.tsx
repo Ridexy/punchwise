@@ -7,7 +7,7 @@ import { WEEKDAYS } from '../lib/time';
 export default function Printable() {
   const [period, setPeriod] = useState<'weekly' | 'biweekly'>('weekly');
   const [paper, setPaper] = useState<'letter' | 'a4'>('letter');
-  const [weekStart, setWeekStart] = useState(0);
+  const [weekStart, setWeekStart] = useState(1);
   const [employer, setEmployer] = useState('');
   const [employee, setEmployee] = useState('');
   const [busy, setBusy] = useState(false);

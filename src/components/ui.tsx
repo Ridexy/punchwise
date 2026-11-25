@@ -93,10 +93,15 @@ export function CtaCalculator({ text = 'Need a whole week, with overtime and a s
   );
 }
 
-export function Toast({ message }: { message: string | null }) {
+export function Toast({ message, action }: { message: string | null; action?: { label: string; onClick: () => void } | null }) {
   return (
     <div aria-live="polite" className="pointer-events-none fixed inset-x-0 top-4 z-[60] flex justify-center px-4">
-      {message && <div className="rounded-full bg-ink-900 px-4 py-2 text-sm font-medium text-white shadow-lg">{message}</div>}
+      {message && (
+        <div className="pointer-events-auto flex items-center gap-3 rounded-full bg-ink-900 px-4 py-2 text-sm font-medium text-white shadow-lg">
+          {message}
+          {action && <button onClick={action.onClick} className="min-h-[32px] rounded-full px-2 font-bold text-brand-100 underline">{action.label}</button>}
+        </div>
+      )}
     </div>
   );
 }

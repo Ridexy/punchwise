@@ -1,4 +1,4 @@
-import { addDays, startOfWeek, todayISO, PRESETS, type Day, type OvertimePreset, type OvertimeRule } from './time';
+import { addDays, computePeriod, startOfWeek, todayISO, PRESETS, type Day, type OvertimePreset, type OvertimeRule, type PeriodResult } from './time';
 
 export type Settings = {
   period: 'weekly' | 'biweekly';
@@ -6,6 +6,8 @@ export type Settings = {
   clock: 12 | 24;
   rounding: 0 | 5 | 6 | 10 | 15;
   rate: number | null;
+  /** Optional separate overtime hourly rate; when null, rate x multiplier is used. */
+  otRate: number | null;
   currency: string; // symbol shown before amounts
   preset: OvertimePreset;
   rule: OvertimeRule;
@@ -26,10 +28,11 @@ export type Timesheet = {
 
 export const DEFAULT_SETTINGS: Settings = {
   period: 'weekly',
-  weekStart: 0,
+  weekStart: 1, // Monday-first week (owner spec); configurable
   clock: 12,
   rounding: 0,
   rate: null,
+  otRate: null,
   currency: '$',
   preset: 'weekly40',
   rule: { ...PRESETS.weekly40 },
@@ -94,4 +97,23 @@ export function nextPeriodCopy(ts: Timesheet): Timesheet {
 
 export function hasAnyTime(ts: Timesheet): boolean {
   return ts.days.some((d) => d.pairs.some((p) => p.start || p.end));
+}
+
+/** All totals for a sheet, using its own settings. */
+export function computeSheet(ts: Timesheet): PeriodResult {
+  const s = ts.settings;
+  return computePeriod(ts.days, s.rule, s.rate, s.rounding, s.otRate ?? null);
+}
+
+export type ShareFields = { identity: boolean; pay: boolean };
+
+/** Copy of a sheet with only the fields the user chose to share. Manager name is kept (it is the recipient). */
+export function redact(ts: Timesheet, f: ShareFields): Timesheet {
+  return {
+    ...ts,
+    employee: f.identity ? ts.employee : '',
+    employer: f.identity ? ts.employer : '',
+    settings: f.pay ? ts.settings : { ...ts.settings, rate: null, otRate: null },
+    signature: f.identity ? ts.signature : null,
+  };
 }

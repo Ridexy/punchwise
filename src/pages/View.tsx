@@ -8,8 +8,7 @@ import { periodLabel, pdfFileFor } from '../components/Calculator';
 import { decodeTimesheet, hashValue } from '../lib/share';
 import { saveSheet, setMeta } from '../lib/db';
 import { downloadBlob } from '../lib/download';
-import { computePeriod } from '../lib/time';
-import type { Timesheet } from '../lib/model';
+import { computeSheet, type Timesheet } from '../lib/model';
 import { SITE_NAME } from '../site';
 
 export default function View() {
@@ -34,7 +33,7 @@ export default function View() {
     </Card>
   );
 
-  const res = computePeriod(ts.days, ts.settings.rule, ts.settings.rate, ts.settings.rounding);
+  const res = computeSheet(ts);
   const pdf = async () => {
     setBusy(true);
     try { const { blob, filename } = await pdfFileFor(ts, supSig); downloadBlob(blob, filename); showToast('PDF downloaded'); } finally { setBusy(false); }
@@ -66,7 +65,7 @@ export default function View() {
             <Button onClick={editCopy} variant="ghost">Edit a copy</Button>
           </div>
           {supSig && <img src={supSig} alt="Supervisor signature" className="mt-3 h-10 object-contain" />}
-          <p className="mt-3 text-xs text-ink-500">This page was made from the link you opened. Nothing was uploaded, and the hours are inside the link itself. Totals are estimates. The employee's drawn signature is only in their PDF.</p>
+          <p className="mt-3 text-xs text-ink-500">This is a user-generated calculation, not an official payroll approval. It was made from the link you opened: nothing was uploaded, and the hours are inside the link itself. The sender chose what to include. The employee's drawn signature is only in their PDF.</p>
         </Card>
         {/* Loop 1 -> 2: convert the receiving manager */}
         <Card className="bg-gradient-to-br from-ink-900 to-brand-900 text-white ring-0">

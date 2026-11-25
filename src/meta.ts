@@ -7,15 +7,22 @@ export type RouteMeta = {
   crumb: string; // breadcrumb / nav label
   index: boolean; // include in sitemap + indexable
   tool: boolean; // a tool page (WebApplication structured data)
+  wide?: boolean; // full-width calculator layout
 };
 
 export const ROUTES: RouteMeta[] = [
-  { path: '/', crumb: 'Time card calculator', index: true, tool: true,
+  { path: '/', crumb: 'Time card calculator', index: true, tool: true, wide: true,
     title: `Time Card Calculator with Breaks & Overtime | ${SITE_NAME}`,
     description: 'Free time card calculator: enter clock-in and clock-out times, breaks and overtime rules to get weekly hours and pay. Print or send a signed timesheet PDF. No sign-up.' },
   { path: '/hours-calculator/', crumb: 'Hours calculator', index: true, tool: true,
     title: `Work Hours Calculator: Hours Between Two Times | ${SITE_NAME}`,
     description: 'Calculate hours worked between a start and end time, minus breaks. Handles overnight shifts and shows the result in hours and minutes and in decimal hours.' },
+  { path: '/biweekly-time-card-calculator/', crumb: 'Biweekly time card calculator', index: true, tool: true, wide: true,
+    title: `Biweekly Time Card Calculator (2 Weeks, Overtime per Week) | ${SITE_NAME}`,
+    description: 'Add up two weeks of clock-in and clock-out times for a biweekly pay period. Overtime is calculated week by week, the way US federal rules require, not on an 80-hour total.' },
+  { path: '/time-duration-calculator/', crumb: 'Time duration calculator', index: true, tool: true,
+    title: `Time Duration Calculator: Time Between Two Dates & Times | ${SITE_NAME}`,
+    description: 'Find the exact time between two dates and times in days, hours and minutes, or add and subtract hours and minutes from a time. Works across midnight and month ends.' },
   { path: '/overtime-calculator/', crumb: 'Overtime calculator', index: true, tool: true,
     title: `Overtime Calculator: Time and a Half & Double Time | ${SITE_NAME}`,
     description: 'Work out overtime pay from your hourly rate and hours worked. Time-and-a-half, double time and custom thresholds, with a clear breakdown of regular and overtime pay.' },

@@ -6,14 +6,15 @@ import { SITE_NAME } from '../site';
 export default function Home() {
   return (
     <>
-      <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Time Card Calculator</h1>
-      <p className="mb-5 mt-2 text-ink-700">Enter your clock-in and clock-out times. Get your weekly hours, overtime and pay, then send or print a signed timesheet. Free, no sign-up, and your hours never leave your device.</p>
+      <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Free Time Card Calculator</h1>
+      <p className="mb-5 mt-2 max-w-3xl text-ink-700">Enter your clock-in and clock-out times. Get your weekly hours, overtime and pay, then send or print a signed timesheet. Free, no sign-up, and your hours never leave your device.</p>
       <Calculator />
+      <div className="max-w-3xl">
       <Prose>
-        <h2>How to use the time card calculator</h2>
+        <h2 id="help" className="scroll-mt-20">How to use the time card calculator</h2>
         <ol>
           <li><strong>Pick the pay period.</strong> Weekly or biweekly. Use the arrows to move to the week you worked.</li>
-          <li><strong>Enter each shift.</strong> Add the time you clocked in and out. Worked a split shift? Tap <em>+ Add shift</em>. On your phone, <em>Clock in now</em> fills in the current time for you.</li>
+          <li><strong>Enter each shift.</strong> Type the time you clocked in and out however you like: <em>9</em>, <em>930</em>, <em>9:30</em>, <em>5p</em> or <em>17:30</em>. The calculator shows how it read each time, and you can tap AM/PM to switch it. Worked a split shift? Tap <em>+ Add shift</em>. On your phone, <em>Clock in now</em> fills in the current time for you.</li>
           <li><strong>Add unpaid breaks.</strong> Tap 15, 30 or 60 minutes, or type any number. Breaks are subtracted from that day.</li>
           <li><strong>Add your rate</strong> (optional) and choose the overtime rule that applies to you to see your gross pay.</li>
           <li><strong>Send or print.</strong> Send the timesheet to your manager as a link or PDF, or download it, sign it and hand it in.</li>
@@ -48,6 +49,8 @@ export default function Home() {
         <div className="grid gap-3 sm:grid-cols-2">
           {[
             ['/hours-calculator/', 'Work hours calculator', 'Hours between two times for a single shift.'],
+            ['/biweekly-time-card-calculator/', 'Biweekly time card calculator', 'Two weeks, with overtime checked week by week.'],
+            ['/time-duration-calculator/', 'Time duration calculator', 'Time between two dates and times.'],
             ['/overtime-calculator/', 'Overtime calculator', 'Time-and-a-half and double-time pay.'],
             ['/time-to-decimal/', 'Time to decimal', 'Minutes to decimal hours, with a chart.'],
             ['/military-time-converter/', 'Military time converter', '12-hour to 24-hour time and back.'],
@@ -60,6 +63,7 @@ export default function Home() {
           ))}
         </div>
       </section>
+      </div>
     </>
   );
 }

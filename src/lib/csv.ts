@@ -1,5 +1,5 @@
-import type { Timesheet } from './model';
-import { WEEKDAYS, computePeriod, displayTime, formatDecimal, formatHM, weekday } from './time';
+import { computeSheet, type Timesheet } from './model';
+import { WEEKDAYS, displayTime, formatDecimal, formatHM, weekday } from './time';
 
 const cell = (v: string | number) => {
   const s = String(v);
@@ -9,7 +9,7 @@ const cell = (v: string | number) => {
 };
 
 export function timesheetCsv(ts: Timesheet): string {
-  const res = computePeriod(ts.days, ts.settings.rule, ts.settings.rate, ts.settings.rounding);
+  const res = computeSheet(ts);
   const maxPairs = Math.max(1, ...ts.days.map((d) => d.pairs.length));
   const head = ['Date', 'Day'];
   for (let i = 1; i <= maxPairs; i++) head.push(`In ${i}`, `Out ${i}`);

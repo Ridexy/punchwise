@@ -11,7 +11,6 @@ const { count, size, warnings } = await generateSW({
   clientsClaim: true,
   skipWaiting: true,
   navigateFallback: '/index.html',
-  navigateFallbackDenylist: [/^\/(hours-calculator|overtime-calculator|time-to-decimal|military-time-converter|printable-timesheet|privacy|view|saved)\//],
   maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
   sourcemap: false,
 });

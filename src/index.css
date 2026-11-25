@@ -8,6 +8,11 @@ input[type='time']::-webkit-date-and-time-value { text-align: left; }
 summary::-webkit-details-marker { display: none; }
 
 @media print {
+  /* On the calculator, printing shows only the clean timesheet. */
+  html:has(#print-timesheet) body * { visibility: hidden; }
+  html:has(#print-timesheet) #print-timesheet, html:has(#print-timesheet) #print-timesheet * { visibility: visible; }
+  html:has(#print-timesheet) #print-timesheet { position: absolute; left: 0; top: 0; width: 100%; }
+
   header, footer, .no-print, nav, button, [aria-live] ~ div > button { display: none !important; }
   body { background: #fff; }
   main { padding: 0 !important; }

@@ -22,6 +22,8 @@ src/lib/model.ts       timesheet data model
 src/lib/share.ts       share-link + team-link encoding (URL fragment)
 src/lib/pdf.ts         filled + blank timesheet PDFs
 src/lib/db.ts          IndexedDB storage, backup/restore
+src/lib/card.ts        PNG share card (drawn in the browser, no personal data)
+src/lib/track.ts       privacy-safe events + ?ref attribution
 src/components/        calculator, share sheet, signature pad, UI kit
 src/pages/             one file per route
 scripts/prerender.mjs  static HTML for every route + sitemap.xml + robots.txt + 404.html
@@ -74,6 +76,7 @@ Both are read **at build time**.
 |---|---|---|
 | `VITE_SITE_URL` | Public URL with no trailing slash. Used for canonical tags, sitemap, Open Graph tags and the PDF footer link. | `https://hourtally.pages.dev` |
 | `VITE_CF_BEACON_TOKEN` | Cloudflare Web Analytics token. Empty turns analytics off. The token is public by design. | empty |
+| `VITE_EVENTS_URL` | Optional endpoint for aggregate growth events (event name + attribution only). Empty sends nothing. See `docs/timecard/growth-metrics.md`. | empty |
 
 ## Deploying to Cloudflare Pages (free tier)
 1. Push this repository to GitHub.

@@ -1,33 +1,45 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Button, Modal } from './ui';
 import { downloadBlob } from '../lib/download';
+import { track } from '../lib/track';
 
 export type ShareSpec = {
   title: string; // modal title
   url: string;
-  text: string; // message body, url appended
+  text: string; // message body; the url is appended unless textIncludesUrl
+  textIncludesUrl?: boolean;
+  editable?: boolean; // let the user edit the message (coworker invite)
   subject?: string;
-  note?: string; // privacy warning
+  note?: string; // privacy note
   file?: () => Promise<{ blob: Blob; filename: string }>;
+  fileLabel?: string;
 };
 
+type Props = { spec: ShareSpec | null; onClose: () => void; onDone?: (msg: string) => void; children?: ReactNode };
+
 /** The share sheet used by every loop: native share on phones, explicit channels everywhere. */
-export function ShareSheet({ spec, onClose, onDone }: { spec: ShareSpec | null; onClose: () => void; onDone?: (msg: string) => void }) {
+export function ShareSheet(props: Props) {
+  if (!props.spec) return null;
+  // Remount per message so the editable text starts from it immediately (no empty first frame).
+  return <Sheet key={props.spec.title + '\n' + props.spec.text} {...props} spec={props.spec} />;
+}
+
+function Sheet({ spec, onClose, onDone, children }: Props & { spec: ShareSpec }) {
   const [busy, setBusy] = useState(false);
-  if (!spec) return null;
-  const full = `${spec.text}\n${spec.url}`;
+  const [text, setText] = useState(spec.text);
+  const full = spec.textIncludesUrl ? text : `${text}\n${spec.url}`;
   const enc = encodeURIComponent;
   const canNative = typeof navigator !== 'undefined' && !!navigator.share;
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(spec.url);
-      onDone?.('Link copied');
-    } catch {
-      window.prompt('Copy this link:', spec.url);
-    }
+  const copy = async (value: string, msg: string) => {
+    track('share_link_copied');
+    try { await navigator.clipboard.writeText(value); onDone?.(msg); }
+    catch { window.prompt('Copy this:', value); }
   };
   const native = async () => {
-    try { await navigator.share({ title: spec.subject ?? spec.title, text: spec.text, url: spec.url }); onClose(); } catch { /* cancelled */ }
+    try {
+      await navigator.share(spec.textIncludesUrl ? { title: spec.subject ?? spec.title, text } : { title: spec.subject ?? spec.title, text, url: spec.url });
+      onClose();
+    } catch { /* cancelled */ }
   };
   const sendFile = async () => {
     if (!spec.file) return;
@@ -40,7 +52,7 @@ export function ShareSheet({ spec, onClose, onDone }: { spec: ShareSpec | null; 
         await nav.share({ files: [file], text: full }).catch(() => {});
       } else {
         downloadBlob(blob, filename);
-        onDone?.('PDF downloaded. Attach it to your message.');
+        onDone?.('Downloaded. Attach it to your message.');
       }
     } finally { setBusy(false); }
   };
@@ -48,14 +60,23 @@ export function ShareSheet({ spec, onClose, onDone }: { spec: ShareSpec | null; 
   return (
     <Modal open title={spec.title} onClose={onClose}>
       <div className="flex flex-col gap-3">
+        {children}
+        {spec.editable && (
+          <>
+            <label htmlFor="share-text" className="text-sm font-medium text-ink-700">Message (you can edit it)</label>
+            <textarea id="share-text" rows={4} value={text} onChange={(e) => setText(e.target.value)}
+              className="w-full rounded-xl border border-ink-300 p-3 text-base focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30" />
+          </>
+        )}
         {canNative && <Button onClick={native} className="w-full">Share…</Button>}
         <div className="grid grid-cols-2 gap-2">
-          <button onClick={copy} className={channel}>Copy link</button>
-          <a className={channel} href={`https://wa.me/?text=${enc(full)}`} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-          <a className={channel} href={`mailto:?subject=${enc(spec.subject ?? spec.title)}&body=${enc(full)}`}>Email</a>
-          <a className={channel} href={`sms:?&body=${enc(full)}`}>Text message</a>
+          <button onClick={() => copy(spec.url, 'Link copied')} className={channel}>Copy link</button>
+          <a className={channel} href={`https://wa.me/?text=${enc(full)}`} target="_blank" rel="noopener noreferrer" data-testid="share-whatsapp">WhatsApp</a>
+          <a className={channel} href={`mailto:?subject=${enc(spec.subject ?? spec.title)}&body=${enc(full)}`} data-testid="share-email">Email</a>
+          <a className={channel} href={`sms:?&body=${enc(full)}`} data-testid="share-sms">Text message</a>
         </div>
-        {spec.file && <Button variant="secondary" onClick={sendFile} disabled={busy} className="w-full">{busy ? 'Preparing PDF…' : 'Send as PDF file'}</Button>}
+        <button onClick={() => copy(full, 'Message copied')} className="min-h-[44px] rounded-xl text-sm font-semibold text-brand-700 hover:bg-brand-50">Copy message text</button>
+        {spec.file && <Button variant="secondary" onClick={sendFile} disabled={busy} className="w-full">{busy ? 'Preparing…' : spec.fileLabel ?? 'Send as PDF file'}</Button>}
         <label className="text-xs font-medium text-ink-500" htmlFor="share-url">Link</label>
         <input id="share-url" readOnly value={spec.url} onFocus={(e) => e.currentTarget.select()} className="w-full truncate rounded-lg border border-ink-300 bg-ink-100 px-3 py-2 text-xs text-ink-700" />
         {spec.note && <p className="text-xs leading-relaxed text-ink-500">{spec.note}</p>}

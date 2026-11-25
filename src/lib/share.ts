@@ -11,11 +11,12 @@ const V = 1;
 type CompactSettings = [
   period: 0 | 1, weekStart: number, clock: 12 | 24, rounding: number, rate: number | null, currency: string,
   preset: OvertimePreset, weekly: number | null, daily: number | null, dbl: number | null, ot: number, dt: number, paper: 0 | 1,
+  otRate?: number | null,
 ];
 
 function packSettings(s: Settings): CompactSettings {
   return [s.period === 'biweekly' ? 1 : 0, s.weekStart, s.clock, s.rounding, s.rate, s.currency, s.preset,
-    s.rule.weeklyHours, s.rule.dailyHours, s.rule.dailyDoubleHours, s.rule.otMultiplier, s.rule.dtMultiplier, s.paper === 'a4' ? 1 : 0];
+    s.rule.weeklyHours, s.rule.dailyHours, s.rule.dailyDoubleHours, s.rule.otMultiplier, s.rule.dtMultiplier, s.paper === 'a4' ? 1 : 0, s.otRate ?? null];
 }
 
 const num = (v: unknown, lo: number, hi: number): number | null =>
@@ -29,10 +30,11 @@ function unpackSettings(c: unknown): Settings {
   const rounding = [0, 5, 6, 10, 15].includes(c[3]) ? c[3] : 0;
   return {
     period: c[0] === 1 ? 'biweekly' : 'weekly',
-    weekStart: num(c[1], 0, 6) ?? 0,
+    weekStart: num(c[1], 0, 6) ?? 1,
     clock: c[2] === 24 ? 24 : 12,
     rounding,
     rate: num(c[4], 0, 100000),
+    otRate: num(c[13], 0, 100000),
     currency: str(c[5], 4) || '$',
     preset,
     rule: preset === 'custom'

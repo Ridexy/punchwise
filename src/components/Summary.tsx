@@ -1,5 +1,5 @@
-import type { Timesheet } from '../lib/model';
-import { WEEKDAYS, computePeriod, displayTime, formatDate, formatDecimal, formatHM, weekday, type PeriodResult } from '../lib/time';
+import { computeSheet, type Timesheet } from '../lib/model';
+import { WEEKDAYS, displayTime, formatDate, formatDecimal, formatHM, weekday, type PeriodResult } from '../lib/time';
 import { describeRule, money } from '../lib/describe';
 
 export function Totals({ ts, res }: { ts: Timesheet; res: PeriodResult }) {
@@ -32,12 +32,13 @@ export function Totals({ ts, res }: { ts: Timesheet; res: PeriodResult }) {
         ))}
       </dl>
       {res.pay && (res.pay.overtime > 0 || res.pay.double > 0) && (
-        <p className="mt-2 text-sm text-ink-700">
+        <p className="mt-2 text-sm text-ink-700" data-testid="pay-split">
           Regular {money(res.pay.regular, s.currency)} + overtime {money(res.pay.overtime, s.currency)}
           {res.pay.double > 0 && <> + double time {money(res.pay.double, s.currency)}</>}
         </p>
       )}
-      <p className="mt-2 text-xs text-ink-500">{describeRule(s.rule)}{s.rounding ? ` · punches rounded to ${s.rounding} min` : ''}</p>
+      {res.total.breaks > 0 && <p className="mt-2 text-sm text-ink-700" data-testid="total-breaks">Unpaid breaks deducted: <strong>{formatHM(res.total.breaks)}</strong></p>}
+      <p className="mt-2 text-xs text-ink-500">{describeRule(s.rule)}{s.otRate ? ` · overtime rate ${money(s.otRate, s.currency)}/h` : ''}{s.rounding ? ` · punches rounded to ${s.rounding} min` : ''}</p>
       {res.warnings.length > 0 && (
         <ul className="mt-3 space-y-1 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200">
           {res.warnings.map((w) => <li key={w}>⚠ {w}</li>)}
@@ -49,7 +50,7 @@ export function Totals({ ts, res }: { ts: Timesheet; res: PeriodResult }) {
 
 /** Read-only table used on the shared /view/ page. */
 export function ReadOnlyTable({ ts }: { ts: Timesheet }) {
-  const res = computePeriod(ts.days, ts.settings.rule, ts.settings.rate, ts.settings.rounding);
+  const res = computeSheet(ts);
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm">

@@ -1,6 +1,6 @@
 import { PDFDocument, PDFFont, PDFPage, PDFString, PageSizes, StandardFonts, rgb } from 'pdf-lib';
-import type { Timesheet } from './model';
-import { WEEKDAYS, addDays, computePeriod, displayTime, formatDate, formatDecimal, formatHM, weekday } from './time';
+import { computeSheet, type Timesheet } from './model';
+import { WEEKDAYS, addDays, displayTime, formatDate, formatDecimal, formatHM, weekday } from './time';
 import { describeRule, money } from './describe';
 import { SITE_HOST, SITE_NAME, SITE_TAGLINE, SITE_URL } from '../site';
 
@@ -106,7 +106,7 @@ export type PdfOptions = { supervisorSignature?: string | null };
 
 export async function timesheetPdf(ts: Timesheet, opts: PdfOptions = {}): Promise<Uint8Array> {
   const s = ts.settings;
-  const res = computePeriod(ts.days, s.rule, s.rate, s.rounding);
+  const res = computeSheet(ts);
   const endDate = addDays(ts.startDate, ts.days.length - 1);
   const periodText = `${formatDate(ts.startDate, 'long')} - ${formatDate(endDate, 'long')}`;
   const { doc, f, size } = await setup(s.paper, `Timesheet ${ts.employee ? '- ' + ts.employee + ' ' : ''}${ts.startDate}`);
@@ -125,7 +125,7 @@ export async function timesheetPdf(ts: Timesheet, opts: PdfOptions = {}): Promis
     ['Employee', ts.employee || '-'],
     ['Company', ts.employer || '-'],
     ['Pay period', periodText],
-    ['Rate', s.rate ? `${money(s.rate, s.currency)} / hour` : '-'],
+    ['Rate', s.rate ? `${money(s.rate, s.currency)} / hour${s.otRate ? `, overtime ${money(s.otRate, s.currency)}` : ''}` : '-'],
   ];
   const colW = cw / 2;
   info.forEach(([k, v], i) => {
@@ -207,7 +207,7 @@ export async function timesheetPdf(ts: Timesheet, opts: PdfOptions = {}): Promis
   y -= Math.max(totals.length, payRows.length) * 16 + 8;
 
   // Signatures + disclaimer
-  const disclaimer = 'This timesheet is a record prepared by the user. Totals and pay are estimates, not payroll, tax or legal advice. '
+  const disclaimer = 'This timesheet is a user-generated calculation, not an official payroll approval. Totals and pay are estimates, not payroll, tax or legal advice. '
     + 'Overtime rules differ by location and employer; check your local law and employer policy. '
     + 'A signature on this document records acknowledgement of the hours shown; it is not a certified electronic signature.';
   const dLines = wrap(disclaimer, f.reg, 7.5, cw);

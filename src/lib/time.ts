@@ -116,26 +116,31 @@ export function splitWeek(dayTotals: number[], rule: OvertimeRule): Split {
 export type PeriodResult = {
   days: DayResult[];
   weeks: Split[];
-  total: Split & { worked: number };
+  total: Split & { worked: number; breaks: number };
   pay: { regular: number; overtime: number; double: number; total: number } | null;
   warnings: string[];
 };
 
 /** Days are split into workweeks of 7 in order (biweekly = 2 weeks). */
-export function computePeriod(days: Day[], rule: OvertimeRule, rate: number | null, rounding = 0): PeriodResult {
+export function computePeriod(days: Day[], rule: OvertimeRule, rate: number | null, rounding = 0, otRate: number | null = null): PeriodResult {
   const dayRes = days.map((d) => dayMinutes(d, rounding));
   const weeks: Split[] = [];
   for (let i = 0; i < dayRes.length; i += 7) {
     weeks.push(splitWeek(dayRes.slice(i, i + 7).map((d) => d.worked), rule));
   }
-  const total = weeks.reduce<Split & { worked: number }>(
+  const sums = weeks.reduce<Split & { worked: number }>(
     (a, w) => ({ regular: a.regular + w.regular, overtime: a.overtime + w.overtime, double: a.double + w.double, worked: a.worked + w.regular + w.overtime + w.double }),
     { regular: 0, overtime: 0, double: 0, worked: 0 },
   );
+  // Break time actually deducted (a break on a day with no hours deducts nothing).
+  const breaks = dayRes.reduce((a, d) => a + (d.gross - d.worked), 0);
+  const total = { ...sums, breaks };
   let pay: PeriodResult['pay'] = null;
   if (rate != null && isFinite(rate) && rate > 0) {
     const r = round2((total.regular / 60) * rate);
-    const o = round2((total.overtime / 60) * rate * rule.otMultiplier);
+    // A separate overtime rate, when given, replaces rate x multiplier.
+    const otHourly = otRate != null && isFinite(otRate) && otRate > 0 ? otRate : rate * rule.otMultiplier;
+    const o = round2((total.overtime / 60) * otHourly);
     const d = round2((total.double / 60) * rate * rule.dtMultiplier);
     pay = { regular: r, overtime: o, double: d, total: round2(r + o + d) };
   }
@@ -253,4 +258,66 @@ export function todayISO(): string {
 export function nowHHMM(): string {
   const d = new Date();
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+export type ParsedTime = { value: string; ambiguous: boolean };
+
+/**
+ * Parse what people actually type into a time box: "9", "930", "9:30", "9.30",
+ * "5p", "5:30 pm", "1730", "0730", "12a".
+ * - An am/pm suffix, an hour of 0 or 13-23, or a leading zero ("0930") is unambiguous.
+ * - In 24-hour mode a bare hour is read literally.
+ * - In 12-hour mode a bare 1-12 hour is AMBIGUOUS: it is resolved with `prefer`
+ *   and flagged, so the UI can show the interpretation and let the user flip it.
+ * Returns null for anything invalid.
+ */
+export function parseTimeInput(raw: string, clock: 12 | 24 = 12, prefer: 'am' | 'pm' = 'am'): ParsedTime | null {
+  const t = raw.trim().toLowerCase().replace(/\s+/g, '').replace(/\./g, ':').replace(/m$/, '');
+  if (!t) return null;
+  const m = /^(\d{1,2})(?::?(\d{2}))?(a|p)?$/.exec(t) || /^(\d{1,2}):(\d{2})(a|p)?$/.exec(t);
+  if (!m) return null;
+  const hourText = m[1];
+  let h = Number(hourText);
+  const mm = m[2] ? Number(m[2]) : 0;
+  if (mm > 59) return null;
+  const suffix = m[3];
+  if (suffix) {
+    if (h < 1 || h > 12) return null;
+    if (h === 12) h = 0;
+    if (suffix === 'p') h += 12;
+    return { value: toTimeString(h * 60 + mm), ambiguous: false };
+  }
+  if (h > 23) return null;
+  const leadingZero = hourText.length === 2 && hourText[0] === '0';
+  if (clock === 24 || h === 0 || h >= 13 || leadingZero) return { value: toTimeString(h * 60 + mm), ambiguous: false };
+  // 1..12 with no suffix in 12-hour mode
+  let h24 = h === 12 ? 0 : h;
+  if (prefer === 'pm') h24 += 12;
+  return { value: toTimeString(h24 * 60 + mm), ambiguous: true };
+}
+
+/** Best AM/PM guess for an ambiguous entry, given the other end of the shift. */
+export function guessMeridiem(raw: string, role: 'in' | 'out', other: string): 'am' | 'pm' {
+  const am = parseTimeInput(raw, 12, 'am');
+  if (!am) return 'am';
+  const amMin = parseTime(am.value)!;
+  const pmMin = (amMin + 720) % 1440;
+  const o = parseTime(other);
+  if (o != null) {
+    // Pick the reading that gives the shorter positive shift.
+    const len = (a: number, b: number) => ((b - a + 1440) % 1440) || 1440;
+    const amLen = role === 'out' ? len(o, amMin) : len(amMin, o);
+    const pmLen = role === 'out' ? len(o, pmMin) : len(pmMin, o);
+    return amLen <= pmLen ? 'am' : 'pm';
+  }
+  const h = Math.floor(amMin / 60) || 12; // 1..12
+  // Without the other time: starts 5-11 are usually morning; ends are usually afternoon/evening.
+  if (role === 'in') return h >= 5 && h <= 11 ? 'am' : 'pm';
+  return 'pm';
+}
+
+/** Swap AM <-> PM on a "HH:MM" value. */
+export function flipMeridiem(value: string): string {
+  const m = parseTime(value);
+  return m == null ? value : toTimeString((m + 720) % 1440);
 }
