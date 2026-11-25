@@ -141,7 +141,7 @@ export async function timesheetPdf(ts: Timesheet, opts: PdfOptions = {}): Promis
     { k: 'Date', w: 0.24 }, { k: 'In', w: 0.16 }, { k: 'Out', w: 0.16 }, { k: 'Break', w: 0.12 },
     { k: 'Hours', w: 0.16 }, { k: 'Decimal', w: 0.16 },
   ].map((c) => ({ ...c, w: c.w * cw }));
-  const xs = cols.reduce<number[]>((a, c, i) => [...a, i === 0 ? M : a[i - 1] + cols[i - 1].w], []);
+  const xs = cols.reduce<number[]>((a, _c, i) => [...a, i === 0 ? M : a[i - 1] + cols[i - 1].w], []);
   const header = () => {
     page.drawRectangle({ x: M, y: y - 18, width: cw, height: 18, color: INK });
     cols.forEach((c, i) => page.drawText(c.k, { x: xs[i] + 6, y: y - 12.5, size: 8.5, font: f.bold, color: rgb(1, 1, 1) }));

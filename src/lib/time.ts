@@ -128,7 +128,7 @@ export function computePeriod(days: Day[], rule: OvertimeRule, rate: number | nu
   for (let i = 0; i < dayRes.length; i += 7) {
     weeks.push(splitWeek(dayRes.slice(i, i + 7).map((d) => d.worked), rule));
   }
-  const total = weeks.reduce(
+  const total = weeks.reduce<Split & { worked: number }>(
     (a, w) => ({ regular: a.regular + w.regular, overtime: a.overtime + w.overtime, double: a.double + w.double, worked: a.worked + w.regular + w.overtime + w.double }),
     { regular: 0, overtime: 0, double: 0, worked: 0 },
   );

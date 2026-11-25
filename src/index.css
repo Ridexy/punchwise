@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html { -webkit-text-size-adjust: 100%; }
+input[type='time'] { min-width: 0; }
+input[type='time']::-webkit-date-and-time-value { text-align: left; }
+summary::-webkit-details-marker { display: none; }
+
+@media print {
+  header, footer, .no-print, nav, button, [aria-live] ~ div > button { display: none !important; }
+  body { background: #fff; }
+  main { padding: 0 !important; }
+  .print-area table { font-size: 11px; }
+}
