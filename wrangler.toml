@@ -25,3 +25,5 @@ dataset = "punchwise_events"
 [vars]
 CF_ACCOUNT_ID = "ea41224d7dcd54e9a53c2ce8718d3384"
 WA_SITE_TAG = "bd2cefad7d7d402ab7e7d6e70d6dad5a"
+# Dashboard ignores data before this moment (UTC). Hides automated test traffic sent before launch.
+STATS_SINCE = "2026-11-26 15:30:00"

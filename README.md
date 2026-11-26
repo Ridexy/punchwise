@@ -156,6 +156,10 @@ If the traffic section shows "Web Analytics unavailable", the Web Analytics site
 Cloudflare **Web Analytics**, click the site, copy the ID from the page address (`…/web-analytics/sites/<site tag>`), put it in
 `WA_SITE_TAG` in `wrangler.toml` and push. The growth section works independently of this.
 
+**Clean start date.** `STATS_SINCE` in `wrangler.toml` (UTC, `YYYY-MM-DD HH:MM:SS`) makes the dashboard ignore everything
+before it. It's set to the end of pre-launch automated testing. Analytics Engine data can't be deleted, so this is how test traffic is excluded.
+Move it later if you want to reset the counters, for example after your own testing.
+
 To rotate the admin token, change the `ADMIN_TOKEN` secret. Every saved login stops working at once.
 
 ## Search engine submission

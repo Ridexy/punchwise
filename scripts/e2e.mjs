@@ -6,6 +6,7 @@ const require = createRequire(import.meta.url);
 const { chromium, devices } = require('playwright');
 
 const BASE = process.env.BASE_URL || 'http://localhost:4173';
+const LIVE = !/127\.0\.0\.1|localhost/.test(BASE); // never send real growth events from test runs against a deployment
 const results = [];
 const errorsByPage = {};
 async function test(name, fn) {
@@ -20,7 +21,17 @@ async function ctxFor(device) {
   const ctx = await browser.newContext({ ...(device ? devices[device] : { viewport: { width: 1280, height: 900 } }), acceptDownloads: true, baseURL: BASE });
   await ctx.grantPermissions(['clipboard-read', 'clipboard-write']).catch(() => {});
   // Against a live deployment, answer /api/e locally so test runs never pollute real growth analytics.
-  if (!/127\.0\.0\.1|localhost/.test(BASE)) await ctx.route('**/api/e', (r) => r.fulfill({ status: 204 }));
+  if (LIVE) {
+    await ctx.route('**/api/e', (r) => r.fulfill({ status: 204 }));
+    // Routing can't see requests sent through the site's service worker, so also stop sending inside the page.
+    await ctx.addInitScript(() => {
+      const isCollector = (u) => String(u).includes('/api/e');
+      const beacon = navigator.sendBeacon.bind(navigator);
+      navigator.sendBeacon = (url, data) => (isCollector(url) ? true : beacon(url, data));
+      const f = window.fetch.bind(window);
+      window.fetch = (input, init) => (isCollector(typeof input === 'string' ? input : input.url) ? Promise.resolve(new Response(null, { status: 204 })) : f(input, init));
+    });
+  }
   return ctx;
 }
 function watch(page, label) {
@@ -443,7 +454,7 @@ for (const dev of ['iPhone SE', 'Pixel 7', null]) {
     await p.evaluate(() => { Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
     await p.waitForFunction(() => window.__beacons.length > 0);
     await p.waitForTimeout(300);
-    expect(requests === 1, `expected 1 request, got ${requests}`);
+    expect(requests === (LIVE ? 0 : 1), `expected ${LIVE ? 0 : 1} request(s), got ${requests}`);
     const body = await p.evaluate(() => window.__beacons[0]);
     const o = JSON.parse(body);
     expect(o.a === 'coworker_invitation', `attribution ${o.a}`);

@@ -132,3 +132,25 @@ describe('worker admin routes', () => {
     expect(ADMIN_HTML).not.toMatch(/innerHTML/);
   });
 });
+
+import { parseSince } from '../../worker/admin/stats';
+describe('STATS_SINCE (exclude pre-launch test data)', () => {
+  it('adds a validated lower bound to the growth SQL', () => {
+    expect(growthQueries(30, '2026-11-26 15:30:00').matrix).toContain("AND timestamp >= toDateTime('2026-11-26 15:30:00')");
+    expect(growthQueries(30).matrix).not.toContain('toDateTime');
+    expect(() => growthQueries(30, "2026-11-26'); DROP")).toThrow();
+  });
+  it('parseSince accepts only the exact UTC format', () => {
+    expect(parseSince(undefined)).toBeNull();
+    expect(parseSince('2026-11-26 15:30:00')).toBe('2026-11-26 15:30:00');
+    for (const bad of ['2026-11-26', '2026-11-26T15:30:00Z', '2026-13-45 99:99:99', "x' OR 1=1"]) expect(() => parseSince(bad)).toThrow();
+  });
+  it('getStats applies it to both sources and reports it', async () => {
+    const { f, calls } = mockFetch();
+    const s = await getStats({ ...env, STATS_SINCE: '2026-11-20 00:00:00' }, 30, f);
+    expect(s.since).toBe('2026-11-20 00:00:00');
+    expect(calls.filter((c) => c.url.endsWith('/sql')).every((c) => c.body.includes("toDateTime('2026-11-20 00:00:00')"))).toBe(true);
+    const gql = calls.find((c) => c.url.endsWith('/graphql'))!;
+    expect(gql.body).toMatch(/datetime_geq: \\"(2026-11-2\d|2026-1[12]-\d\d)T/);
+  });
+});

@@ -276,7 +276,7 @@ export const ADMIN_HTML = /* html */ `<!doctype html>
       tr.append(el('td', { class: 'n' }, g.ok ? fmt(g.totals[e]) : '–')); t.append(tr);
     }
     $('status').textContent = '';
-    $('foot').textContent = 'Last ' + s.days + ' days · updated ' + new Date(s.generatedAt).toLocaleString() + ' · growth counts are corrected for Analytics Engine sampling. Visits are only counted for visitors whose browser loads the Cloudflare beacon (ad blockers reduce this).';
+    $('foot').textContent = 'Last ' + s.days + ' days' + (s.since ? ' (counting from ' + s.since + ' UTC)' : '') + ' · updated ' + new Date(s.generatedAt).toLocaleString() + ' · growth counts are corrected for Analytics Engine sampling. Visits are only counted for visitors whose browser loads the Cloudflare beacon (ad blockers reduce this).';
   }
 
   $('login-form').addEventListener('submit', (e) => { e.preventDefault(); save($('token').value.trim(), $('remember').checked); $('token').value = ''; load(); });

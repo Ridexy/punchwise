@@ -15,6 +15,7 @@ export type StatsEnv = {
   CF_API_TOKEN?: string;
   CF_ACCOUNT_ID?: string;
   WA_SITE_TAG?: string;
+  STATS_SINCE?: string; // "YYYY-MM-DD HH:MM:SS" UTC: ignore data before this (launch date / end of testing)
   CF_API_BASE?: string; // tests/local only; defaults to Cloudflare's API
 };
 type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
@@ -32,6 +33,7 @@ export type WebStats = {
 };
 export type Stats = {
   days: number;
+  since: string | null;
   generatedAt: string;
   growth: { ok: boolean; error?: string; matrix?: Matrix; totals?: Record<EventName, number>; daily?: { date: string; calculations: number; opens: number }[] };
   kpis?: Record<string, { value: number | null; numerator: number; denominator: number; label: string; help: string }>;
@@ -56,10 +58,19 @@ async function sql(env: StatsEnv, f: Fetch, query: string): Promise<Record<strin
   return body.data ?? [];
 }
 
-/** Queries built only from constants and an allow-listed integer: no user text reaches SQL. */
-export function growthQueries(days: number) {
+const SINCE_RE = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/;
+/** Validated STATS_SINCE, or null if unset. A malformed value is an error, never silently ignored. */
+export function parseSince(v: string | undefined): string | null {
+  if (!v) return null;
+  if (!SINCE_RE.test(v) || Number.isNaN(Date.parse(v.replace(' ', 'T') + 'Z'))) throw new Error('STATS_SINCE must look like "2026-11-26 15:30:00" (UTC).');
+  return v;
+}
+
+/** Queries built only from constants, an allow-listed integer and a validated date: no user text reaches SQL. */
+export function growthQueries(days: number, since: string | null = null) {
   if (!(ALLOWED_DAYS as readonly number[]).includes(days)) throw new Error('bad range');
-  const where = `FROM ${DATASET} WHERE timestamp > NOW() - INTERVAL '${days}' DAY`;
+  if (since !== null && !SINCE_RE.test(since)) throw new Error('bad since');
+  const where = `FROM ${DATASET} WHERE timestamp > NOW() - INTERVAL '${days}' DAY` + (since ? ` AND timestamp >= toDateTime('${since}')` : '');
   return {
     matrix: `SELECT blob1 AS event, blob2 AS source, SUM(_sample_interval * double1) AS n ${where} GROUP BY event, source FORMAT JSON`,
     daily: `SELECT toStartOfDay(timestamp) AS day, blob1 AS event, SUM(_sample_interval * double1) AS n ${where} AND blob1 IN ('calculation_completed', 'calculator_opened') GROUP BY day, event ORDER BY day FORMAT JSON`,
@@ -87,7 +98,7 @@ export function buildKpis(m: Matrix) {
 
 async function growth(env: StatsEnv, f: Fetch, days: number): Promise<Stats['growth'] & { kpis?: Stats['kpis'] }> {
   try {
-    const q = growthQueries(days);
+    const q = growthQueries(days, parseSince(env.STATS_SINCE));
     const [rows, dailyRows] = await Promise.all([sql(env, f, q.matrix), sql(env, f, q.daily)]);
     const matrix = emptyMatrix();
     for (const r of rows) {
@@ -130,7 +141,10 @@ async function web(env: StatsEnv, f: Fetch, days: number, now = new Date()): Pro
   if (!env.WA_SITE_TAG) return { ok: false, error: 'WA_SITE_TAG is not set.' };
   try {
     const base = env.CF_API_BASE || 'https://api.cloudflare.com/client/v4';
-    const start = new Date(now.getTime() - days * 86400000).toISOString();
+    const since = parseSince(env.STATS_SINCE);
+    const rangeStart = now.getTime() - days * 86400000;
+    const sinceMs = since ? Date.parse(since.replace(' ', 'T') + 'Z') : 0;
+    const start = new Date(Math.max(rangeStart, sinceMs)).toISOString();
     const res = await f(`${base}/graphql`, {
       method: 'POST',
       headers: { authorization: `Bearer ${env.CF_API_TOKEN}`, 'content-type': 'application/json' },
@@ -164,9 +178,11 @@ async function web(env: StatsEnv, f: Fetch, days: number, now = new Date()): Pro
 export async function getStats(env: StatsEnv, days: number, f: Fetch = fetch): Promise<Stats> {
   if (!env.CF_API_TOKEN || !env.CF_ACCOUNT_ID) {
     const error = 'Set the CF_API_TOKEN secret (Account Analytics: Read) and the CF_ACCOUNT_ID variable.';
-    return { days, generatedAt: new Date().toISOString(), growth: { ok: false, error }, web: { ok: false, error } };
+    return { days, since: null, generatedAt: new Date().toISOString(), growth: { ok: false, error }, web: { ok: false, error } };
   }
   const [g, w] = await Promise.all([growth(env, f, days), web(env, f, days)]);
   const { kpis, ...growthRest } = g;
-  return { days, generatedAt: new Date().toISOString(), growth: growthRest, kpis, web: w };
+  let since: string | null = null;
+  try { since = parseSince(env.STATS_SINCE); } catch { /* reported by each section */ }
+  return { days, since, generatedAt: new Date().toISOString(), growth: growthRest, kpis, web: w };
 }
