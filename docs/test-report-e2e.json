@@ -1,8 +1,8 @@
 {
   "base": "http://127.0.0.1:8788",
-  "date": "2026-11-25T19:50:05.328Z",
-  "passed": 78,
-  "total": 78,
+  "date": "2026-11-26T11:15:41.476Z",
+  "passed": 79,
+  "total": 79,
   "results": [
     {
       "name": "layout iPhone SE /: no horizontal scroll, no console errors",
@@ -306,6 +306,10 @@
     },
     {
       "name": "growth beacon: one batch with event counts + attribution only, sent when the page is hidden",
+      "ok": true
+    },
+    {
+      "name": "admin: /admin shows the login page after visiting the site (service worker active)",
       "ok": true
     },
     {

@@ -454,6 +454,22 @@ for (const dev of ['iPhone SE', 'Pixel 7', null]) {
   });
 }
 
+// 3c. Admin dashboard must load even after the service worker has taken control (regression: SW served the app's 404)
+{
+  await test('admin: /admin shows the login page after visiting the site (service worker active)', async () => {
+    const ctx = await ctxFor(null);
+    const p = await ctx.newPage();
+    await p.goto('/');
+    await p.evaluate(async () => { await navigator.serviceWorker.ready; });
+    await p.reload();
+    await p.waitForFunction(() => !!navigator.serviceWorker.controller);
+    await p.goto('/admin');
+    await p.waitForSelector('#login-form', { timeout: 10000 });
+    expect(!(await p.locator('text=Page not found').count()), 'app 404 shown instead of admin');
+    await ctx.close();
+  });
+}
+
 // 4. Offline (service worker) + prerendered HTML without JavaScript
 {
   await test('pages render meaningful content with JavaScript disabled (SEO)', async () => {

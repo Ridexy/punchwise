@@ -11,6 +11,8 @@ const { count, size, warnings } = await generateSW({
   clientsClaim: true,
   skipWaiting: true,
   navigateFallback: '/index.html',
+  // Server-rendered routes handled by the Worker must always go to the network, never the app shell.
+  navigateFallbackDenylist: [/^\/admin(\/|$)/, /^\/api\//],
   maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
   sourcemap: false,
 });
