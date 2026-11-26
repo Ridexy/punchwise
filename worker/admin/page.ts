@@ -175,18 +175,22 @@ export const ADMIN_HTML = /* html */ `<!doctype html>
     host.textContent = '';
     if (!points.length) { host.append(el('p', { class: 'empty' }, 'No data yet.')); return; }
     const W = 560, H = 200, L = 40, R = 12, T = 12, B = 26;
-    const max = Math.max(1, ...points.map((p) => p.v));
+    const max = Math.max(0, ...points.map((p) => p.v));
     // Nice ceiling: round max/4 up to a 1-2-2.5-5 step, then take the first multiple at or above max.
-    const raw = max / 4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
-    const stepSize = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((t) => t >= raw);
-    const top = Math.max(1, Math.ceil(max / stepSize) * stepSize);
+    // Small counts (incl. all-zero) get a 0-2-4 axis so the midline label is a whole number.
+    let top = 4;
+    if (max > 4) {
+      const raw = max / 4, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+      const stepSize = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((t) => t >= raw) || 10 * mag;
+      top = Math.ceil(max / stepSize) * stepSize;
+    }
     const x = (i) => L + (points.length === 1 ? (W - L - R) / 2 : (i * (W - L - R)) / (points.length - 1));
     const y = (v) => T + (H - T - B) * (1 - v / top);
     const svg = sv('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', tabindex: '0', 'aria-label': label + ': use arrow keys to read values' });
     for (const g of [0, 0.5, 1]) {
       const gy = y(top * g);
       svg.append(sv('line', { x1: L, x2: W - R, y1: gy, y2: gy, stroke: 'var(--grid)', 'stroke-width': 1 }));
-      const t = sv('text', { x: L - 6, y: gy + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--ink-3)' }); t.textContent = fmt(Math.round(top * g)); svg.append(t);
+      const t = sv('text', { x: L - 6, y: gy + 4, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--ink-3)' }); const gv = top * g; t.textContent = Number.isInteger(gv) ? fmt(gv) : gv.toFixed(1); svg.append(t);
     }
     const idx = [0, Math.floor((points.length - 1) / 2), points.length - 1].filter((v, i, a) => a.indexOf(v) === i);
     for (const i of idx) { const t = sv('text', { x: x(i), y: H - 6, 'text-anchor': i === 0 ? 'start' : i === points.length - 1 ? 'end' : 'middle', 'font-size': 11, fill: 'var(--ink-3)' }); t.textContent = dayLabel(points[i].d); svg.append(t); }
